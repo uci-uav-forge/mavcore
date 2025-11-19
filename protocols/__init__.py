@@ -20,3 +20,6 @@ from mavcore.protocols.fence_clear_protocol import (
 from mavcore.protocols.fence_upload_protocol import (
     FenceUploadProtocol as FenceUploadProtocol,
 )
+from mavcore.protocols.velocity_setpoint_protocol import (
+    VelocitySetpointProtocol as VelocitySetpointProtocol,
+)

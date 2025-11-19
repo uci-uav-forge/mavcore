@@ -38,3 +38,4 @@ from mavcore.messages.mission_request_msg import MissionRequestInt as MissionReq
 from mavcore.messages.mission_request_msg import MissionType as MissionType
 from mavcore.messages.mission_ack_msg import MissionAck as MissionAck
 from mavcore.messages.mission_ack_msg import MissionResult as MissionResult
+from mavcore.messages.setpoint_velocity_msg import SetpointVelocity as SetpointVelocity
