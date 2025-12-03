@@ -9,18 +9,6 @@ class SetpointVelocity(MAVMessage):
     A velocity setpoint in local NED frame. Measured in m/s.
     Uses same MAVLink message as SetpointLocal, but different type mask.
     """
-import pymavlink.dialects.v20.all as dialect
-import time
-import numpy as np
-from mavcore.mav_message import MAVMessage
-
-
-class SetpointVelocity(MAVMessage):
-    """
-    A velocity setpoint in local NED frame. Measured in m/s.
-    Uses same MAVLink message as SetpointLocal, but different type mask.
-    """
-
     def __init__(
         self,
         target_system: int,
