@@ -1,4 +1,4 @@
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 from enum import IntEnum
 
 
@@ -26,5 +26,6 @@ class MissionRequestInt(MAVMessage):
         self.mission_type = MissionType(msg.mission_type)
         self.seq = msg.seq
 
+    @thread_safe
     def __repr__(self):
-        return f"(MISSION_REQUEST_INT) timestamp: {self.timestamp} ms, type: {self.mission_type.name}, seq: {self.seq}"
+        return f"(MISSION_REQUEST_INT) timestamp: {self.timestamp} s, type: {self.mission_type.name}, seq: {self.seq}"

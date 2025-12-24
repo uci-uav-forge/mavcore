@@ -1,6 +1,6 @@
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class MAVResult(Enum):
@@ -31,5 +31,6 @@ class CommandAck(MAVMessage):
         self.command_id = msg.command
         self.result = MAVResult(msg.result)
 
+    @thread_safe
     def __repr__(self):
-        return f"(COMMAND_ACK) timestamp: {self.timestamp} ms, command_id: {self.command_id}, result: {self.result.name}"
+        return f"(COMMAND_ACK) timestamp: {self.timestamp} s, command_id: {self.command_id}, result: {self.result.name}"

@@ -1,6 +1,6 @@
 import pymavlink.dialects.v20.all as dialect
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class Arm(MAVMessage):
@@ -27,6 +27,3 @@ class Arm(MAVMessage):
             param6=0.0,
             param7=0.0,
         )
-
-    def __repr__(self):
-        return super().__repr__()

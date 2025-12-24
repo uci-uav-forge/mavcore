@@ -1,20 +1,17 @@
-import threading
 import time
+import threading
 import pymavlink.mavutil as utility
 
 from mavcore.mav_message import MAVMessage
-from mavcore.mav_receiver import Receiver
 
 
 class Sender:
     def __init__(
         self,
-        receiver: Receiver,
         sys_id: int,
         component_id: int,
         connection: utility.mavudp | utility.mavserial,
     ):
-        self.receiver = receiver
         self.sys_id = sys_id
         self.component_id = component_id
         self.connection = connection
@@ -54,7 +51,7 @@ class Sender:
 
         self._check_disconnect()
 
-        mav_msg = msg.encode(
+        mav_msg = msg._encode(
             self.sys_id if not system_id else system_id,
             self.component_id if not component_id else component_id,
         )
@@ -70,7 +67,7 @@ class Sender:
         while True:
             for payload in self.repeating_msgs:
                 msg, sys_id, comp_id = payload
-                if time.time() * 1000 - msg.timestamp > msg.repeat_period:
+                if time.time() - msg.timestamp > msg.repeat_period:
                     self.acquire()
                     self.send_msg(msg, sys_id, comp_id)
                     self.release()

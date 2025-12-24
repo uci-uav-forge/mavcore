@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class MAVFrame(Enum):
@@ -37,5 +37,6 @@ class Takeoff(MAVMessage):
             param7=float(self.alt),  # required to be float
         )
 
+    @thread_safe
     def __repr__(self):
         return f"(CUSTOM_TAKEOFF) timestamp: {self.timestamp}, altitude: {self.alt}"

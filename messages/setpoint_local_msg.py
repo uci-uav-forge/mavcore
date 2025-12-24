@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 import time
 import numpy as np
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class SetpointLocal(MAVMessage):
@@ -50,11 +50,13 @@ class SetpointLocal(MAVMessage):
             yaw_rate=float(0.0),
         )
 
+    @thread_safe
     def load(self, target: np.ndarray):
         self.x = target[0]
         self.y = target[1]
         self.z = target[2]
 
+    @thread_safe
     def __repr__(self):
         return (
             super().__repr__()

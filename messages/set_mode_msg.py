@@ -1,6 +1,6 @@
 import pymavlink.dialects.v20.all as dialect
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 from mavcore.messages.heartbeat_msg import FlightMode
 
 
@@ -30,5 +30,6 @@ class SetMode(MAVMessage):
             param7=0.0,
         )
 
+    @thread_safe
     def __repr__(self):
         return f"(CUSTOM_SET_MODE) timestamp: {self.timestamp}, mode: {self.mode.name}"

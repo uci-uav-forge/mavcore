@@ -1,6 +1,6 @@
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 from mavcore.messages.mission_request_msg import MissionType
 
 
@@ -41,5 +41,6 @@ class MissionAck(MAVMessage):
         self.result = MissionResult(msg.type)
         self.mission_type = MissionType(msg.mission_type)
 
+    @thread_safe
     def __repr__(self):
-        return f"(COMMAND_ACK) timestamp: {self.timestamp} ms, result: {self.result.name}, type: {self.mission_type.name}"
+        return f"(COMMAND_ACK) timestamp: {self.timestamp} s, result: {self.result.name}, type: {self.mission_type.name}"

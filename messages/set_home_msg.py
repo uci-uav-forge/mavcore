@@ -1,5 +1,5 @@
 import pymavlink.dialects.v20.all as dialect
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class SetHome(MAVMessage):
@@ -27,5 +27,6 @@ class SetHome(MAVMessage):
             param7=0.0,
         )
 
+    @thread_safe
     def __repr__(self):
         return f"(SET_HOME) timestamp: {self.timestamp}"

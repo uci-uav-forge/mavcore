@@ -1,4 +1,4 @@
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class Attitude(MAVMessage):
@@ -23,5 +23,6 @@ class Attitude(MAVMessage):
         self.pitchspeed = msg.pitchspeed
         self.yawspeed = msg.yawspeed
 
+    @thread_safe
     def __repr__(self) -> str:
-        return f"(ATTITUDE) timestamp: {self.timestamp} ms, pitch: {self.pitch}, roll: {self.roll}"
+        return f"(ATTITUDE) timestamp: {self.timestamp} s, pitch: {self.pitch}, roll: {self.roll}"

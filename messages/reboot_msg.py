@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 from enum import IntEnum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class ShutdownAction(IntEnum):
@@ -37,5 +37,6 @@ class RebootMsg(MAVMessage):
             param7=0.0,
         )
 
+    @thread_safe
     def __repr__(self):
         return f"(MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN) timestamp: {self.timestamp}"

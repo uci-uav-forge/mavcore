@@ -1,6 +1,8 @@
 from enum import Enum
+from typing import Any
+import pymavlink.dialects.v20.all as dialect
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class BatteryFunction(Enum):
@@ -32,7 +34,7 @@ class BatteryStatus(MAVMessage):
         self.bat_func = BatteryFunction(-1)
         self.bat_type = BatteryType(-1)
         self.temp = -1  # degrees in celcius
-        self.voltages = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # in mV
+        self.voltages = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # in mV
         self.current = -1  # in centiAmps
         self.current_consumed = -1  # in mAh
         self.energy_consumed = -1  # in hJ
@@ -49,5 +51,19 @@ class BatteryStatus(MAVMessage):
         self.energy_consumed = msg.energy_consumed
         self.soc = msg.battery_remaining
 
+    @thread_safe
+    def encode(self, system_id, component_id) -> Any:
+        return dialect.MAVLink_battery_status_message(
+            id=self.bat_id,
+            battery_function=self.bat_func.value,
+            type=self.bat_type.value,
+            temperature=self.temp,
+            voltages=self.voltages,
+            current_battery=self.current,
+            current_consumed=self.current_consumed,
+            energy_consumed=self.energy_consumed,
+            battery_remaining=self.soc,
+        )
+
     def __repr__(self) -> str:
-        return f"(BATTERY_STATUS) timestamp: {self.timestamp} ms, voltages: {self.voltages}, soc: {self.soc}%, func: {self.bat_func.name}, type: {self.bat_type.name}"
+        return f"(BATTERY_STATUS) timestamp: {self.timestamp} s, voltages: {self.voltages}, soc: {self.soc}%, func: {self.bat_func.name}, type: {self.bat_type.name}"

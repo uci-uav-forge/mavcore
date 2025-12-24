@@ -1,0 +1,21 @@
+name: Linter Checks
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ruff:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: 'format --check'
+          version: "0.14.5"

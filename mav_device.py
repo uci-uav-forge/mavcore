@@ -27,7 +27,6 @@ class MAVDevice:
             device_address, baud_rate, source_system, source_component
         )
         self.sender = Sender(
-            self.receiver,
             self.connection.target_system,
             self.connection.target_component,
             self.connection,
@@ -90,5 +89,4 @@ class MAVDevice:
         while self.reading:
             msg = self.connection.recv_match(blocking=True, timeout=1)
             if msg:
-                timestamp_ms = time.time() * 1000
-                self.receiver.update_queue(timestamp_ms, msg)
+                self.receiver.update_queue(time.time(), msg)

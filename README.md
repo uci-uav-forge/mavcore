@@ -57,3 +57,22 @@ set_guided = device.run_protocol(SetModeProtocol(FlightMode.GUIDED))
 Not necessary if you are only receiving a particular message, but neccessary if you want to send something
 1. Create a class for your protocol in the `protocols` folder. For convention append "Protocol" to the end of the name.
 2. Override the `run` function using `sender.send_msg` and `receiver.wait_for_msg` with `MAVMessage` to build your protocol
+
+## How to Test
+After you have installed the [SITL](https://github.com/uci-uav-forge/GNC-26-Knowledge-Base/blob/main/docs/env_setup.md)
+
+1. In one terminal launch the SITL. The coords below launch at the ARC main field west. Give this 2 minutes to load, it should begin listening on UDP Port 14550.
+```bash
+ cd simcore
+ ./sitl_setup.sh 33.64293210548397 -117.82628818855002
+```
+
+2. In order to connect your script, instantiate your `MAVDevice` as follows
+```python
+device = MAVDevice("udp:127.0.0.1:14550")
+```
+
+3. If you want to perform commands on the drone thats not in your script go back to the terminal you started up the sitl in. It is interactive and you can issue [mavproxy commands](https://ardupilot.org/mavproxy/docs/getting_started/cheatsheet.html) to it.
+Just press `enter` a couple times on the terminal to see the mavproxy vehicle mode prefix.
+
+NOTE: When running on the SITL, mavproxy automatically sends message interval requests for several messages. This means you may see messages published during your script in the SITL that don't appear when testing in person on a real flight controller. Remember to double check your message requests.

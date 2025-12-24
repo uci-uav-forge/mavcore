@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class MAVSeverity(Enum):
@@ -34,5 +34,6 @@ class StatusText(MAVMessage):
         self.text = str(msg.text)
         self.severity = MAVSeverity(msg.severity)
 
+    @thread_safe
     def __repr__(self):
         return f"(STATUSTEXT) timestamp: {self.timestamp}, severity: {self.severity.name}, text: '{self.text}'"

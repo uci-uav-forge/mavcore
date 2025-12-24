@@ -1,3 +1,6 @@
+from mavcore.protocols.battery_update_protocol import (
+    UpdateBatteryProtocol as UpdateBatteryProtocol,
+)
 from mavcore.protocols.heartbeat_protocol import HeartbeatProtocol as HeartbeatProtocol
 from mavcore.protocols.set_mode_protocol import SetModeProtocol as SetModeProtocol
 from mavcore.protocols.status_text_protocol import (

@@ -1,4 +1,4 @@
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class VFRHUD(MAVMessage):
@@ -24,5 +24,6 @@ class VFRHUD(MAVMessage):
         self.throttle = msg.throttle
         self.alt_msl = msg.alt
 
+    @thread_safe
     def __repr__(self) -> str:
-        return f"(VFR_HUD) timestamp: {self.timestamp} ms, throttle: {self.throttle}"
+        return f"(VFR_HUD) timestamp: {self.timestamp} s, throttle: {self.throttle}"
