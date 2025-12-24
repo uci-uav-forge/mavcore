@@ -9,6 +9,7 @@ class SetpointVelocity(MAVMessage):
     A velocity setpoint in local NED frame. Measured in m/s.
     Uses same MAVLink message as SetpointLocal, but different type mask.
     """
+
     def __init__(
         self,
         target_system: int,
@@ -23,7 +24,7 @@ class SetpointVelocity(MAVMessage):
         self.target_component = target_component
 
         self.boot_time_ms = (
-            boot_time_ms # time since system boot in milliseconds (for sync)
+            boot_time_ms  # time since system boot in milliseconds (for sync)
         )
         self.vx = vx  # velocity North in m/s
         self.vy = vy  # velocity East in m/s
@@ -35,13 +36,15 @@ class SetpointVelocity(MAVMessage):
             target_system=int(self.target_system),
             target_component=int(self.target_component),
             coordinate_frame=int(1),  # MAV_FRAME_LOCAL_NED
-            type_mask=int(0b0000101111000111),  # Change type_mask to ignore all but velocity
-            x=float(0.0),       
-            y=float(0.0),       
-            z=float(0.0),       
-            vx=float(self.vx),  
-            vy=float(self.vy),  
-            vz=float(self.vz),  
+            type_mask=int(
+                0b0000101111000111
+            ),  # Change type_mask to ignore all but velocity
+            x=float(0.0),
+            y=float(0.0),
+            z=float(0.0),
+            vx=float(self.vx),
+            vy=float(self.vy),
+            vz=float(self.vz),
             afx=float(0.0),
             afy=float(0.0),
             afz=float(0.0),
@@ -59,4 +62,6 @@ class SetpointVelocity(MAVMessage):
             super().__repr__()
             + f", boot: {self.boot_time_ms}, vx: {self.vx:.2f}, vy: {self.vy:.2f}, vz: {self.vz:.2f}"
         )
+
+
 # Duplicate class implementation removed.
