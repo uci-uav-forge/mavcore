@@ -35,7 +35,7 @@ class SetpointVelocity(MAVMessage):
             target_system=int(self.target_system),
             target_component=int(self.target_component),
             coordinate_frame=int(1),  # MAV_FRAME_LOCAL_NED
-            type_mask=int(0b0000111111000111),  # Change type_mask to ignore all but velocity
+            type_mask=int(0b0000101111000111),  # Change type_mask to ignore all but velocity
             x=float(0.0),       
             y=float(0.0),       
             z=float(0.0),       

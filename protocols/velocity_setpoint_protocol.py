@@ -69,9 +69,8 @@ class VelocitySetpointProtocol(MAVProtocol):
         velocity = unit_direction * target_speed
         
         # Slow down when close to/approaching waypoint
-        if distance < 5.0:
-            slowdown_factor = distance / 5.0
-            velocity *= slowdown_factor
+        if distance < 45.0:
+            velocity /= 3.0
         
         return velocity
 
@@ -131,7 +130,7 @@ class VelocitySetpointProtocol(MAVProtocol):
             print(f"[VelocityControl] Waypoint {i+1}/{len(self.waypoints)} @ {optimal_speed:.1f} m/s")
 
             while True:
-                current_position = self.current_pos.get_pos()
+                current_position = self.current_pos.get_pos_ned()
                 distance_to_waypoint = np.linalg.norm(waypoint_coords - current_position)
    
                 if distance_to_waypoint <= waypoint.radius:
@@ -148,4 +147,4 @@ class VelocitySetpointProtocol(MAVProtocol):
                 
                 self.velocity_msg.load(velocity_vector)
                 sender.send_msg(self.velocity_msg)
-                time.sleep(1)
+                time.sleep(0.25)
