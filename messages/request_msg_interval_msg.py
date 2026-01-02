@@ -8,9 +8,9 @@ class IntervalMessageID(Enum):
     SYSTEM_TIME = 2
     GPS_RAW_INT = 24
     ATTITUDE = 30
-    ATTITUDE_QUATERNION = 31
-    LOCAL_POSITION_NED = 32
-    GLOBAL_POSITION_INT = 33
+    ATTITUDE_QUATERNION = 61 #31
+    LOCAL_POSITION_NED = 64 #32
+    GLOBAL_POSITION_INT = 63 #33
     BATTERY_STATUS = 147
 
 
@@ -49,4 +49,4 @@ class RequestMessageInterval(MAVMessage):
 
     @thread_safe
     def __repr__(self):
-        return f"(MAV_CMD_SET_MESSAGE_INTERVAL) timestamp: {self.timestamp}, msg_id: {self.msg_id.name}"
+        return f"(MAV_CMD_SET_MESSAGE_INTERVAL) timestamp: {self.timestamp}, msg_id: {self.msg_id.name}, rate_hz: {self.rate_hz}"
