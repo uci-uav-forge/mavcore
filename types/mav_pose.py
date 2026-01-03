@@ -18,6 +18,8 @@ class Pose(NamedTuple):
     position: np.ndarray
     rotation: Rotation
     timestamp: float = 0.0  # in seconds
+    poscov: np.ndarray = np.zeros((9, 9))  # 9x9 position covariance matrix
+    rotcov: np.ndarray = np.zeros((3, 3))  # 3x3 rotation covariance matrix
 
     @staticmethod
     def identity() -> "Pose":
@@ -68,11 +70,15 @@ class Pose(NamedTuple):
         quat: np.ndarray,
         order: bool = True,
         timestamp: float = 0.0,
+        pose_cov: np.ndarray = np.zeros((9, 9)),
+        rot_cov: np.ndarray = np.zeros((3, 3)),
     ) -> "Pose":
         return Pose(
             position=position,
             rotation=Rotation.from_quat(quat, scalar_first=order),
             timestamp=timestamp,
+            poscov=pose_cov,
+            rotcov=rot_cov,
         )
 
     def interpolate(

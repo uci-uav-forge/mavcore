@@ -44,7 +44,13 @@ class FullPose(MAVMessage):
             quat=self.attitude.get_quat(),
             order=True,
             timestamp=self.local_position.timestamp,
+            pose_cov=self.local_position.get_covariance_enu(),
+            rot_cov=self.attitude.get_covariance()
         )
+
+    @thread_safe
+    def get_current_covariances(self) -> tuple[np.ndarray, np.ndarray]:
+        return self.local_position.get_covariance_enu(), self.attitude.get_covariance()
 
     @thread_safe
     def get_local_velocity(self) -> np.ndarray:
@@ -56,7 +62,7 @@ class FullPose(MAVMessage):
 
     @thread_safe
     def get_global_velocity(self) -> np.ndarray:
-        return np.array(self.global_position.get_vel())
+        return np.array(self.global_position.get_vel_enu())
 
     def pose_callback(self, msg):
         """

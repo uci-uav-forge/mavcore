@@ -18,7 +18,7 @@ class AttitudeQuat(MAVMessage):
     """
 
     def __init__(self):
-        super().__init__("ATTITUDE_QUATERNION")
+        super().__init__("ATTITUDE_QUATERNION_COV")
         self.w = 1.0
         self.x = 0.0
         self.y = 0.0
@@ -26,21 +26,27 @@ class AttitudeQuat(MAVMessage):
         self.rollspeed = 0.0  # angular speed in radians/sec
         self.pitchspeed = 0.0  # angular speed in radians/sec
         self.yawspeed = 0.0  # angular speed in radians/sec
-        self.quat_offset = [0.0, 0.0, 0.0, 0.0]  # Not supported in Ardupilot?
+        self.covariance : np.ndarray = np.eye(3)  # attitude covariance roll pitch yaw
+        # self.quat_offset = [0.0, 0.0, 0.0, 0.0]  # Not supported in Ardupilot?
 
     def decode(self, msg):
-        self.w = msg.q1
-        self.x = msg.q2
-        self.y = msg.q3
-        self.z = msg.q4
+        self.w = msg.q[0]
+        self.x = msg.q[1]
+        self.y = msg.q[2]
+        self.z = msg.q[3]
         self.rollspeed = msg.rollspeed
         self.pitchspeed = msg.pitchspeed
         self.yawspeed = msg.yawspeed
-        self.quat_offset = msg.repr_offset_q  # Mavlink 2 only
+        self.covariance = np.array(msg.covariance).reshape((3, 3))
+        # self.quat_offset = msg.repr_offset_q  # Mavlink 2 only
 
     @thread_safe
     def get_quat(self) -> np.ndarray:
         return np.array([self.w, self.x, self.y, self.z])
+    
+    @thread_safe
+    def get_covariance(self) -> np.ndarray:
+        return self.covariance.copy()
 
     @thread_safe
     def __repr__(self) -> str:
