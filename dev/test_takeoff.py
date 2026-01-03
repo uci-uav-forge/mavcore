@@ -23,6 +23,10 @@ while True:
     if fp.local_position.get_hz() > 25.0:
         break
 # while True:
+print("Start covariances:")
+pose_cov, rot_cov = fp.get_current_covariances()
+print("Pose Covariance:\n", pose_cov)
+print("Rotation Covariance:\n", rot_cov)
 time.sleep(2)
 set_mode_protocol = protocols.SetModeProtocol(
     messages.FlightMode.GUIDED
@@ -41,6 +45,12 @@ while abs(fp.get_local_position().position[2] - 20.0) > 1.0:
     print(f"Current altitude: {fp.get_local_position().position[2]}")
     time.sleep(0.2)
 print("Takeoff complete")
+
+print("Current covariances:")
+pose_cov, rot_cov = fp.get_current_covariances()
+print("Pose Covariance:\n", pose_cov)
+print("Rotation Covariance:\n", rot_cov)
+
 time.sleep(2)
 set_mode_protocol = protocols.SetModeProtocol(messages.FlightMode.RTL)
 print("--Setting RTL mode")
@@ -53,3 +63,8 @@ print("Land complete")
 
 print("Final Hz rates: [Full_Pose, Local_Position, Attitude]")
 print(fp.get_hz(), fp.local_position.get_hz(), fp.attitude.get_hz())
+
+print("End covariances:")
+pose_cov, rot_cov = fp.get_current_covariances()
+print("Pose Covariance:\n", pose_cov)
+print("Rotation Covariance:\n", rot_cov)
