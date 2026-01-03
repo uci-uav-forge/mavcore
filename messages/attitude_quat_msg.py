@@ -26,7 +26,7 @@ class AttitudeQuat(MAVMessage):
         self.rollspeed = 0.0  # angular speed in radians/sec
         self.pitchspeed = 0.0  # angular speed in radians/sec
         self.yawspeed = 0.0  # angular speed in radians/sec
-        self.covariance : np.ndarray = np.eye(3)  # attitude covariance roll pitch yaw
+        self.covariance: np.ndarray = np.eye(3)  # attitude covariance roll pitch yaw
         # self.quat_offset = [0.0, 0.0, 0.0, 0.0]  # Not supported in Ardupilot?
 
     def decode(self, msg):
@@ -43,7 +43,7 @@ class AttitudeQuat(MAVMessage):
     @thread_safe
     def get_quat(self) -> np.ndarray:
         return np.array([self.w, self.x, self.y, self.z])
-    
+
     @thread_safe
     def get_covariance(self) -> np.ndarray:
         return self.covariance.copy()

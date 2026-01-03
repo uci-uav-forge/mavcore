@@ -21,14 +21,18 @@ class LocalPosition(MAVMessage):
         self.ay = 0.0  # in m/s^2
         self.az = 0.0  # in m/s^2
         self.estimator_type = 0  # type of estimator
-        self.covariance : list[float] = [0.0] * 45  # Row-major representation of position, velocity and acceleration 9x9 cross-covariance matrix upper right triangle
+        self.covariance: list[float] = (
+            [0.0] * 45
+        )  # Row-major representation of position, velocity and acceleration 9x9 cross-covariance matrix upper right triangle
 
-    def _process_covariance(self, covariance : list[float], enu : bool = False) -> np.ndarray:
-        '''
-        Row-major representation of position, velocity and acceleration 9x9 cross-covariance matrix upper right triangle 
+    def _process_covariance(
+        self, covariance: list[float], enu: bool = False
+    ) -> np.ndarray:
+        """
+        Row-major representation of position, velocity and acceleration 9x9 cross-covariance matrix upper right triangle
         (states: x, y, z, vx, vy, vz, ax, ay, az; first nine entries are the first ROW, next eight entries are the second row, etc.)
         Converts to a 9x9 numpy array.
-        '''
+        """
         processed_covariance = np.zeros((9, 9))
         index = 0
         for i in range(9):
@@ -39,15 +43,17 @@ class LocalPosition(MAVMessage):
                 index += 1
         if enu:
             # swap x and y, and invert z
-            ned_to_enu_matrix = np.array([[0, 1, 0],
-                                           [1, 0, 0],
-                                           [0, 0, -1]])
-            rotation_matrix = np.block([
-                [ned_to_enu_matrix, np.zeros((3, 6))],
-                [np.zeros((3, 3)), ned_to_enu_matrix, np.zeros((3, 3))],
-                [np.zeros((3, 6)), ned_to_enu_matrix]
-            ])
-            processed_covariance = rotation_matrix @ processed_covariance @ rotation_matrix.T
+            ned_to_enu_matrix = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
+            rotation_matrix = np.block(
+                [
+                    [ned_to_enu_matrix, np.zeros((3, 6))],
+                    [np.zeros((3, 3)), ned_to_enu_matrix, np.zeros((3, 3))],
+                    [np.zeros((3, 6)), ned_to_enu_matrix],
+                ]
+            )
+            processed_covariance = (
+                rotation_matrix @ processed_covariance @ rotation_matrix.T
+            )
         return processed_covariance
 
     def decode(self, msg):
@@ -79,11 +85,11 @@ class LocalPosition(MAVMessage):
     @thread_safe
     def get_vel_enu(self) -> np.ndarray:
         return np.array([self.vy, self.vx, -self.vz])
-    
+
     @thread_safe
     def get_covariance_ned(self) -> np.ndarray:
         return self._process_covariance(self.covariance, enu=False)
-    
+
     @thread_safe
     def get_covariance_enu(self) -> np.ndarray:
         return self._process_covariance(self.covariance, enu=True)

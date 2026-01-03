@@ -6,7 +6,7 @@ from mavcore.messages.global_position_msg import GlobalPosition
 
 import bisect
 import numpy as np
-from mavcore.types.mav_pose import Pose
+from mavcore.mavtypes.mav_pose import Pose
 
 
 class FullPose(MAVMessage):
@@ -45,7 +45,7 @@ class FullPose(MAVMessage):
             order=True,
             timestamp=self.local_position.timestamp,
             pose_cov=self.local_position.get_covariance_enu(),
-            rot_cov=self.attitude.get_covariance()
+            rot_cov=self.attitude.get_covariance(),
         )
 
     @thread_safe
