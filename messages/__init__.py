@@ -49,3 +49,4 @@ from mavcore.messages.status_text_msg import StatusText as StatusText
 from mavcore.messages.system_time_msg import SystemTime as SystemTime
 from mavcore.messages.takeoff_msg import Takeoff as Takeoff
 from mavcore.messages.vfr_hud_msg import VFRHUD as VFRHUD
+from mavcore.messages.level_calibration_msg import LevelCal
