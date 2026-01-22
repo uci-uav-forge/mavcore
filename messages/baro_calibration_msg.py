@@ -19,9 +19,9 @@ class BaroCal(MAVMessage):
             confirmation=0,
             param1=0.0,
             param2=0.0,
-            param3=0.0,
+            param3=1.0,
             param4=0.0,
             param5=0.0,
             param6=0.0,
-            param7=3.0,
+            param7=0.0,
         )
