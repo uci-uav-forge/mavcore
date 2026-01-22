@@ -32,3 +32,4 @@ class CalibrationProtocol(MAVProtocol):
         future_ack = receiver.wait_for_msg(self.ack_msg, blocking=False)
         sender.send_msg(self.arm_msg)
         future_ack.wait_until_finished()
+        print(self.ack_msg)

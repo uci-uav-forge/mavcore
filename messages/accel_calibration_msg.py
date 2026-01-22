@@ -7,10 +7,12 @@ class AccelCal(MAVMessage):
     """
 
     def __init__(self, target_system: int, target_component: int):
+        super().__init__("ACCELEROMETER_CALIBRATION")
         self.target_system = target_system
         self.target_component = target_component
     
-    def encode(self):
+    def encode(self, target_system: int, target_component: int):
+        print("accel calibrating...")
         return dialect.MAVLink_command_long_message(
             target_system=self.target_system,
             target_component=self.target_component,
