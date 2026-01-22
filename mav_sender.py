@@ -3,6 +3,7 @@ import threading
 import pymavlink.mavutil as utility
 
 from mavcore.mav_message import MAVMessage
+from mavcore.messages.rc_override_msg import RCOverride
 
 
 class Sender:
@@ -46,10 +47,15 @@ class Sender:
         Sends a mavlink message. Must have aquired the lock (automatic if using run protocol).
         Optional specified system and component ids otherwise connection defaults used.
         """
+        self.acquire()
         if not self._is_owned():
             raise RuntimeError("Current thread does not own the lock")
 
         self._check_disconnect()
+
+        if isinstance(msg, RCOverride):
+            self._old_src = self.connection.source_system
+            self.connection.mav.srcSystem = 255
 
         mav_msg = msg._encode(
             self.sys_id if not system_id else system_id,
@@ -57,8 +63,14 @@ class Sender:
         )
         self.connection.mav.send(mav_msg)
         msg.timestamp = time.time() * 1000
+
+        if isinstance(msg, RCOverride):
+            self.connection.mav.srcSystem = self._old_src
+
         if msg.repeat_period != 0.0:
             self.repeating_msgs.append((msg, system_id, component_id))
+
+        self.release()
 
     def repeat_loop(self):
         """

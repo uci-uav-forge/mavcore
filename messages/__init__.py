@@ -18,6 +18,7 @@ from mavcore.messages.gps_raw_int_msg import FixType as FixType
 from mavcore.messages.heartbeat_msg import FlightMode as FlightMode
 from mavcore.messages.full_pose_msg import FullPose as FullPose
 from mavcore.messages.global_position_msg import GlobalPosition as GlobalPosition
+from mavcore.messages.gps_raw_int_msg import GPSRaw as GPSRaw
 from mavcore.messages.heartbeat_msg import Heartbeat as Heartbeat
 from mavcore.messages.request_msg_interval_msg import (
     IntervalMessageID as IntervalMessageID,
@@ -36,7 +37,7 @@ from mavcore.messages.command_ack_msg import MAVResult as MAVResult
 from mavcore.messages.heartbeat_msg import MAVState as MAVState
 from mavcore.messages.takeoff_msg import MAVFrame as MAVFrame
 from mavcore.messages.status_text_msg import MAVSeverity as MAVSeverity
-from mavcore.messages.gps_raw_int_msg import GPSRaw as GPSRaw
+from mavcore.messages.rc_override_msg import RCOverride as RCOverride
 from mavcore.messages.reboot_msg import RebootMsg as RebootMsg
 from mavcore.messages.request_msg_interval_msg import (
     RequestMessageInterval as RequestMessageInterval,

@@ -114,13 +114,12 @@ class MAVMessage:
         Adds a message to the internal queue for processing. <br>
         Do not override this method.
         """
-        with self._queuelock:
-            if self._msg_queue.full():
-                try:
-                    self._msg_queue.get_nowait()
-                except queue.Empty:
-                    pass
-            self._msg_queue.put(msg)
+        if self._msg_queue.full():
+            try:
+                self._msg_queue.get_nowait()
+            except queue.Empty:
+                pass
+        self._msg_queue.put(msg)
 
     def _process(self):
         """
@@ -129,8 +128,7 @@ class MAVMessage:
         """
         while not self.end:
             try:
-                with self._queuelock:
-                    msg = self._msg_queue.get(timeout=0.1)
+                msg = self._msg_queue.get(timeout=0.1)
                 self._decode(msg)
             except queue.Empty:
                 time.sleep(0.02)

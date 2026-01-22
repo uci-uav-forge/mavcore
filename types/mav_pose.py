@@ -105,7 +105,7 @@ class Pose(NamedTuple):
             timestamp=timestamp,
         )
 
-    def __eq__(self, other: Pose_T):
+    def __eq__(self, other: "Pose"):
         return (
             np.allclose(self.position, other.position)
             and self.rotation == other.rotation

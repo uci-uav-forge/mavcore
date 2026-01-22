@@ -66,6 +66,9 @@ class Receiver:
             timestamp, msg = self.queue.get()
             msg_name = msg.get_type()
 
+            if self.queue.qsize() > 50:
+                print(f"queue size: {self.queue.qsize()}", flush=True)
+
             # Check if waiting for this message
             if msg_name in self.waiting:
                 for wait_msg in self.waiting[msg_name]:
@@ -80,16 +83,16 @@ class Receiver:
                         listener.update_timestamp(timestamp)
                         listener.process_message(msg)
 
-            # Manage message history
-            if msg_name in self.history_dict:
-                self.history_dict[msg_name].insert(0, (timestamp, msg))
+            # # Manage message history
+            # if msg_name in self.history_dict:
+            #     self.history_dict[msg_name].insert(0, (timestamp, msg))
 
-                # Manage history length
-                if len(self.history_dict[msg_name]) > self.history_size:
-                    self.history_dict[msg_name].pop()
-            else:
-                # Brand new message type
-                self.history_dict[msg_name] = [(timestamp, msg)]
+            #     # Manage history length
+            #     if len(self.history_dict[msg_name]) > self.history_size:
+            #         self.history_dict[msg_name].pop()
+            # else:
+            #     # Brand new message type
+            #     self.history_dict[msg_name] = [(timestamp, msg)]
 
     def wait_for_msg(
         self, msg: MAVMessage, timeout_seconds: float = -1.0, blocking=True

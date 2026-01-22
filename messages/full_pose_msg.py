@@ -56,7 +56,7 @@ class FullPose(MAVMessage):
 
     @thread_safe
     def get_global_velocity(self) -> np.ndarray:
-        return np.array(self.global_position.get_vel())
+        return np.array(self.global_position.get_vel_enu())
 
     def pose_callback(self, msg):
         """

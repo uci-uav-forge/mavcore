@@ -80,9 +80,7 @@ class MAVDevice:
         """
         Runs a MAVProtocol object that sends and receives messages to complete the protcol.
         """
-        self.sender.acquire()
         protocol.run(self.sender, self.receiver)
-        self.sender.release()
         return protocol
 
     def _main_loop(self):
