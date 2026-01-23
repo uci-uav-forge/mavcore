@@ -15,11 +15,11 @@ class CompassCal(MAVMessage):
         return dialect.MAVLink_command_long_message(
             target_system=self.target_system,
             target_component=self.target_component,
-            command=42424,  # MAV_CMD_DO_START_MAG_CAL (42424)
+            command=42006,  # MAV_CMD_FIXED_MAG_CAL_YAW (42006)
             confirmation=0,
             param1=0.0,
             param2=0.0,
-            param3=1.0,
+            param3=0.0,
             param4=0.0,
             param5=0.0,
             param6=0.0,
