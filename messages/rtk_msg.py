@@ -3,8 +3,9 @@ from mavcore.mav_message import MAVMessage
 
 
 class RTKData(MAVMessage):
-    def __init__(self, payload):
-        super().__init__("RTK_DATA")\
+    def __init__(self, sequence_num, payload):
+        super().__init__("RTK_DATA")
+        self.sequence_num = sequence_num
         self.data = list(payload)
         self.data_length = len(payload)
     
@@ -22,7 +23,7 @@ class RTKData(MAVMessage):
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_gps_rtcm_data_message(
-            flags=0b00000000,
+            flags=self.sequence_num << 3,
             len=self.data_length,
             data=self.data + [0 for _ in (180 - range(self.data_length))]
         )
