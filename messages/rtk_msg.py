@@ -25,5 +25,5 @@ class RTKData(MAVMessage):
         return dialect.MAVLink_gps_rtcm_data_message(
             flags=self.sequence_num << 3,
             len=self.data_length,
-            data=self.data + [0 for _ in (180 - range(self.data_length))]
+            data=self.data + [0 for _ in range(180 - (self.data_length))]
         )
