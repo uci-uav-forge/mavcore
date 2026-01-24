@@ -17,6 +17,6 @@ class Waypoint:
                 round(self.y, 10),
                 round(self.z, 10),
                 round(self.radius, 10),
-                round(self.speed, 10)
+                round(self.speed, 10),
             )
         )
