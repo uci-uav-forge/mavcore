@@ -24,6 +24,7 @@ class VelocitySetpointProtocol(MAVProtocol):
         current_pos: LocalPositionNED,
         waypoints: list[Waypoint],
         boot_time_ms: int,
+        log_func=lambda msg: print(msg),
         mission_phase: str = "cruise",
         target_system: int = 1,
         target_component: int = 0,
@@ -35,6 +36,7 @@ class VelocitySetpointProtocol(MAVProtocol):
         self.mission_phase = mission_phase
         self.target_system = target_system
         self.target_component = target_component
+        self.log_func = log_func
 
         # Base speed for mission phase
         self.base_speed = self.SPEED_PROFILES.get(mission_phase, 10.0)
@@ -68,7 +70,7 @@ class VelocitySetpointProtocol(MAVProtocol):
         velocity = unit_direction * target_speed
 
         # Slow down when close to/approaching waypoint
-        if distance < 45.0:
+        if distance < 15.0:
             velocity /= 3.0
 
         return velocity
@@ -121,9 +123,9 @@ class VelocitySetpointProtocol(MAVProtocol):
         for i in range(len(self.waypoints)):
             waypoint = self.waypoints[i]
             waypoint_coords = np.array([waypoint.x, waypoint.y, waypoint.z])
-            optimal_speed = self.get_optimal_speed_for_waypoint(i)
+            optimal_speed = waypoint.speed
 
-            print(
+            self.log_func(
                 f"[VelocityControl] Waypoint {i + 1}/{len(self.waypoints)} @ {optimal_speed:.1f} m/s"
             )
 
@@ -134,7 +136,7 @@ class VelocitySetpointProtocol(MAVProtocol):
                 )
 
                 if distance_to_waypoint <= waypoint.radius:
-                    print(f"[VelocityControl] Reached waypoint {i + 1}")
+                    self.log_func(f"[VelocityControl] Reached waypoint {i + 1}")
                     self.velocity_msg.load(np.array([0.0, 0.0, 0.0]))
                     sender.send_msg(self.velocity_msg)
                     break
