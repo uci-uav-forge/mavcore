@@ -50,3 +50,8 @@ from mavcore.messages.status_text_msg import StatusText as StatusText
 from mavcore.messages.system_time_msg import SystemTime as SystemTime
 from mavcore.messages.takeoff_msg import Takeoff as Takeoff
 from mavcore.messages.vfr_hud_msg import VFRHUD as VFRHUD
+from mavcore.messages.accel_calibration_msg import AccelCal
+from mavcore.messages.baro_calibration_msg import BaroCal
+from mavcore.messages.compass_calibration_msg import CompassCal
+from mavcore.messages.level_calibration_msg import LevelCal
+from mavcore.messages.sys_status_msg import SysStatus

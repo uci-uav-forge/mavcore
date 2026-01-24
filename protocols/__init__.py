@@ -29,3 +29,7 @@ from mavcore.protocols.velocity_setpoint_protocol import (
 from mavcore.protocols.rc_override_protocol import (
     RCOverrideProtocol as RCOverrideProtocol,
 )
+
+from mavcore.protocols.calibration_protocol import (
+    CalibrationProtocol as CalibrationProtocol,
+)
