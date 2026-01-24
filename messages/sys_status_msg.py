@@ -9,7 +9,7 @@ class SysStatus(MAVMessage):
     Provides sensor presence, enabled state, and health bitmasks.
     """
 
-    def __init__(self, cb=lambda msg:None):
+    def __init__(self, cb=lambda msg: None):
         super().__init__("SYS_STATUS", callback_func=cb)
 
         self.present = 0
@@ -26,11 +26,9 @@ class SysStatus(MAVMessage):
 
     def baro_health(self):
         return bool((self.health & 2**3) >> 3)
-    
+
     def compass_health(self):
         return bool((self.health & 2**2) >> 2)
-    
+
     def level_health(self):
         return bool((self.health & 2**11) >> 11)
-    
-

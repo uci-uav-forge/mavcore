@@ -1,6 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 from mavcore.mav_message import MAVMessage
 
+
 class BaroCal(MAVMessage):
     """
     Calibrates the barometer.
@@ -10,7 +11,7 @@ class BaroCal(MAVMessage):
         super().__init__("ACCELEROMETER_CALIBRATION")
         self.target_system = target_system
         self.target_component = target_component
-    
+
     def encode(self, target_system: int, target_component: int):
         return dialect.MAVLink_command_long_message(
             target_system=self.target_system,
