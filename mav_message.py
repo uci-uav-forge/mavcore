@@ -140,7 +140,8 @@ class MAVMessage:
         Do not override this method.
         """
         self.end = True
-        self._log_thread.join()
+        if self._log_thread.is_alive():
+            self._log_thread.join()
         if self._decodethread is not None:
             self._decodethread.join()
             self._decodethread = None
