@@ -1,5 +1,5 @@
 import pymavlink.dialects.v20.all as dialect
-from mavcore.mav_message import MAVMessage
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class RTKData(MAVMessage):
@@ -8,18 +8,6 @@ class RTKData(MAVMessage):
         self.sequence_num = sequence_num
         self.data = list(payload)
         self.data_length = len(payload)
-    
-    """
-    def encode(self, system_id, component_id):
-        x = list(b'\xd3\x00\x91Fp\x00S\xb3\xdbD\x00\x00\x00\x00\x18\x04\x10\x00\x80\x00 \x00\x01\x00T\xcajI\x89j\x00\x00\x01\x12E\xaa\x00\xf8\x8a\x04\x0c\x05\x7f\xdd`M\x02\x93\xd8\xd6\x19c\xe60\xce!\xfa\x15\x91\xf8\x7ff\x85^Tg\xe0\xbf2\x80yV\xbeG\xeb(1\xf0\xe41\xa80\x1c\x07B`t \x02h\t\t\xfeM!\x0f6\xa8\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf3\xe4\x91') + [0 for _ in range(29)]
-        print(len(x))
-        return dialect.MAVLink_gps_rtcm_data_message(
-            flags=0b00000000,
-            len=151,
-            #data=[62 for _ in range(22)] + [0 for _ in range(158)]
-            data = list(b'\xd3\x00\x91Fp\x00S\xb3\xdbD\x00\x00\x00\x00\x18\x04\x10\x00\x80\x00 \x00\x01\x00T\xcajI\x89j\x00\x00\x01\x12E\xaa\x00\xf8\x8a\x04\x0c\x05\x7f\xdd`M\x02\x93\xd8\xd6\x19c\xe60\xce!\xfa\x15\x91\xf8\x7ff\x85^Tg\xe0\xbf2\x80yV\xbeG\xeb(1\xf0\xe41\xa80\x1c\x07B`t \x02h\t\t\xfeM!\x0f6\xa8\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf3\xe4\x91') + [0 for _ in range(29)] 
-        )
-    """
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_gps_rtcm_data_message(
@@ -27,3 +15,28 @@ class RTKData(MAVMessage):
             len=self.data_length,
             data=self.data + [0 for _ in range(180 - (self.data_length))]
         )
+    
+    @thread_safe
+    def __repr__(self):
+        return f"""(GPS_RTCM_DATA)\n
+            \tflags: {bin(self.sequence_num << 3)}\n
+            \tlength: {self.data_length}\n
+            \tdata: {self.data}"""
+
+"""
+class RTKData(MAVMessage):
+    def __init__(self, is_fragmented: bool, fragment_id: int, sequence_num: int, payload: list[int]):
+        super().__init__("RTK_DATA")
+        self.is_fragmented = is_fragmented
+        self.fragment_id = fragment_id
+        self.sequence_num = sequence_num
+        self.data = payload
+        self.data_length = len(payload)
+
+    def encode(self, system_id, component_id):
+        return dialect.MAVLink_gps_rtcm_data_message(
+            flags=(self.sequence_num << 3) | (self.fragment_id << 1) | self.is_fragmented,
+            len=self.data_length,
+            data=self.data + [0 for _ in range(180 - (self.data_length))]
+        )
+"""
