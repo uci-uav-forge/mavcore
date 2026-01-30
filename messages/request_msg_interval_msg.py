@@ -12,6 +12,7 @@ class IntervalMessageID(Enum):
     ATTITUDE_QUATERNION = 31
     LOCAL_POSITION_NED = 32
     GLOBAL_POSITION_INT = 33
+    VFR_HUD = 74
     BATTERY_STATUS = 147
 
 
