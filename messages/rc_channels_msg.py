@@ -1,5 +1,6 @@
 from mavcore.mav_message import MAVMessage, thread_safe
 
+
 class RCChannels(MAVMessage):
     """
     Raw RC input channels as seen by the flight controller.
