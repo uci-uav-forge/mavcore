@@ -32,6 +32,6 @@ class SysStatus(MAVMessage):
 
     def level_health(self):
         return bool((self.health & 2**11) >> 11)
-    
+
     def estop(self):
-        return bool((self.health & 2 ** 15) >> 15)
+        return bool((self.health & 2**15) >> 15)

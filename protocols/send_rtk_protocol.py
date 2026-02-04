@@ -4,6 +4,7 @@ from mavcore.messages.command_ack_msg import CommandAck
 
 GPS_RTCM_MAX_LENGTH = 180
 
+
 class SendRTKProtocol(MAVProtocol):
     """
     Sends RTK message and splits it into up to 4 fragments, since payloads have a

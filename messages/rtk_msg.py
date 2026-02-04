@@ -7,9 +7,17 @@ class RTKData(MAVMessage):
     Sends RTCM message.
     """
 
-    def __init__(self, is_fragmented: bool, fragment_id: int, sequence_num: int, payload: list[int]):
+    def __init__(
+        self,
+        is_fragmented: bool,
+        fragment_id: int,
+        sequence_num: int,
+        payload: list[int],
+    ):
         super().__init__("RTK_DATA")
-        self.flags = (sequence_num << 3) | (fragment_id << 1) | (1 if is_fragmented else 0)
+        self.flags = (
+            (sequence_num << 3) | (fragment_id << 1) | (1 if is_fragmented else 0)
+        )
         self.data = payload
         self.data_length = len(payload)
 
@@ -17,9 +25,7 @@ class RTKData(MAVMessage):
         if self.data_length < 180:
             self.data = self.data + [0 for _ in range(180 - (self.data_length))]
         return dialect.MAVLink_gps_rtcm_data_message(
-            flags=self.flags,
-            len=self.data_length,
-            data=self.data
+            flags=self.flags, len=self.data_length, data=self.data
         )
 
     @thread_safe
