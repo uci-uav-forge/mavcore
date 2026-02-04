@@ -37,6 +37,7 @@ from mavcore.messages.command_ack_msg import MAVResult as MAVResult
 from mavcore.messages.heartbeat_msg import MAVState as MAVState
 from mavcore.messages.takeoff_msg import MAVFrame as MAVFrame
 from mavcore.messages.status_text_msg import MAVSeverity as MAVSeverity
+from mavcore.messages.rc_channels_msg import RCChannels as RCChannels
 from mavcore.messages.rc_override_msg import RCOverride as RCOverride
 from mavcore.messages.reboot_msg import RebootMsg as RebootMsg
 from mavcore.messages.request_msg_interval_msg import (
