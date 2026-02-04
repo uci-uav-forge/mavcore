@@ -58,8 +58,44 @@ class MAVMessage:
 
         self._decoded = False  # Set False on wait_for_msg, True after decoded
 
+        # Logging util
+        self.logging_callback: Callable | None = None
+        self.logging_rate = 10  # Hz
+        self._log_thread = threading.Thread(target=self._log_loop, daemon=True)
+
     def __del__(self):
         self.stop_callback_thread()
+
+    def set_logging_callback(self, callback: Callable, rate: float = 10.0):
+        """
+        Sets a logging callback function that will be called at a fixed rate in a separate thread.
+        The function should take no arguments.
+
+        callback: the function to call
+        rate: the rate in Hz to call the function
+        """
+        if not callable(callback):
+            print("Logging callback is not callable. Skipping.")
+            return
+        self.logging_callback = callback
+        self.logging_rate = rate
+        if not self._log_thread.is_alive():
+            self._log_thread.start()
+
+    def _log_loop(self):
+        """
+        Internal method for logging at a fixed rate.
+        """
+        while not self.end:
+            try:
+                start_time = time.time()
+                self.logging_callback()
+                time.sleep(
+                    max(0, (1.0 / self.logging_rate) - (time.time() - start_time))
+                )
+            except Exception:
+                time.sleep(0.1)
+                continue
 
     @thread_safe
     def update_timestamp(self, timestamp: float):
@@ -104,6 +140,8 @@ class MAVMessage:
         Do not override this method.
         """
         self.end = True
+        if self._log_thread.is_alive():
+            self._log_thread.join()
         if self._decodethread is not None:
             self._decodethread.join()
             self._decodethread = None

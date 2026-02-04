@@ -7,6 +7,7 @@ class Waypoint:
     y: float
     z: float
     radius: float
+    speed: float
 
     def __hash__(self):
         # hash floats in a stable way
@@ -16,5 +17,6 @@ class Waypoint:
                 round(self.y, 10),
                 round(self.z, 10),
                 round(self.radius, 10),
+                round(self.speed, 10),
             )
         )
