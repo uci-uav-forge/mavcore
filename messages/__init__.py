@@ -45,6 +45,7 @@ from mavcore.messages.request_msg_interval_msg import (
 )
 from mavcore.messages.set_home_msg import SetHome as SetHome
 from mavcore.messages.set_mode_msg import SetMode as SetMode
+from mavcore.messages.attitude_target_msg import SetpointAttitude as SetpointAttitude
 from mavcore.messages.setpoint_local_msg import SetpointLocal as SetpointLocal
 from mavcore.messages.setpoint_velocity_msg import SetpointVelocity as SetpointVelocity
 from mavcore.messages.status_text_msg import StatusText as StatusText

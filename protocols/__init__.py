@@ -1,3 +1,4 @@
+from mavcore.protocols.attitude_setpoint_protocol import AttitudeSetpointProtocol as AttitudeSetpointProtocol
 from mavcore.protocols.battery_update_protocol import (
     UpdateBatteryProtocol as UpdateBatteryProtocol,
 )
