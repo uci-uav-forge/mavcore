@@ -10,8 +10,9 @@ device = mavcore.MAVDevice("udp:127.0.0.1:14550")
 boot_time_ms = int(time.time() * 1000)
 
 local_pos = messages.LocalPositionNED()
+device.add_listener(local_pos)
 
-request_local_pos = protocols.RequestMessageProtocol(messages.IntervalMessageID.LOCAL_POSITION_NED, rate_hz=50)
+request_local_pos = protocols.RequestMessageProtocol(messages.IntervalMessageID.LOCAL_POSITION_NED, rate_hz=50.0)
 device.run_protocol(request_local_pos)
 
 request_arm = protocols.ArmProtocol()
