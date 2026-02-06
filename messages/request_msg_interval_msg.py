@@ -8,6 +8,7 @@ class IntervalMessageID(Enum):
     SYS_STATUS = 1
     SYSTEM_TIME = 2
     GPS_RAW_INT = 24
+    RAW_IMU = 27
     ATTITUDE = 30
     ATTITUDE_QUATERNION = 31
     LOCAL_POSITION_NED = 32
