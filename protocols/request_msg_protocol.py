@@ -15,11 +15,13 @@ class RequestMessageProtocol(MAVProtocol):
         target_system: int = 1,
         target_component: int = 0,
         rate_hz: float = 4.0,
+        wait_for_ack: bool = True
     ):
         super().__init__()
         self.msg_id = msg_id
         self.target_system = target_system
         self.target_component = target_component
+        self.wait_for_ack = wait_for_ack
 
         self.mode_msg = RequestMessageInterval(
             self.target_system, self.target_component, self.msg_id, rate_hz
@@ -29,4 +31,5 @@ class RequestMessageProtocol(MAVProtocol):
     def run(self, sender, receiver):
         future_ack = receiver.wait_for_msg(self.ack_msg, blocking=False)
         sender.send_msg(self.mode_msg)
-        future_ack.wait_until_finished()
+        if self.wait_for_ack:
+            future_ack.wait_until_finished()
