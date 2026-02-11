@@ -15,7 +15,7 @@ class RequestMessageProtocol(MAVProtocol):
         target_system: int = 1,
         target_component: int = 0,
         rate_hz: float = 4.0,
-        wait_for_ack: bool = True
+        wait_for_ack: bool = True,
     ):
         super().__init__()
         self.msg_id = msg_id

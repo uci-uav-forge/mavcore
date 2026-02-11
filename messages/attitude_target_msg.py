@@ -30,7 +30,9 @@ class SetpointAttitude(MAVMessage):
         self.target_system = target_system
         self.target_component = target_component
 
-        self.boot_time_ms = boot_time_ms  # time since system boot in milliseconds (for sync)
+        self.boot_time_ms = (
+            boot_time_ms  # time since system boot in milliseconds (for sync)
+        )
 
         # quaternion (w, x, y, z)
         self.q = np.array(q, dtype=float)
@@ -90,13 +92,13 @@ class SetpointAttitude(MAVMessage):
 
     def set_ignore_attitude(self, ignore: bool = True):
         if ignore:
-            self.type_mask |= (1 << 6)
+            self.type_mask |= 1 << 6
         else:
             self.type_mask &= ~(1 << 6)
 
     def set_ignore_thrust(self, ignore: bool = True):
         if ignore:
-            self.type_mask |= (1 << 7)
+            self.type_mask |= 1 << 7
         else:
             self.type_mask &= ~(1 << 7)
 
