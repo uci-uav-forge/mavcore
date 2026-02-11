@@ -7,7 +7,6 @@ import numpy as np
 
 
 class AttitudeSetpointProtocol(MAVProtocol):
-
     def __init__(
         self,
         current_pos: LocalPositionNED,
@@ -27,7 +26,11 @@ class AttitudeSetpointProtocol(MAVProtocol):
         self.thrust = 0.1
 
         self.setpoint_msg = SetpointAttitude(
-            self.target_system, self.target_component, self.boot_time_ms, self.q, self.thrust
+            self.target_system,
+            self.target_component,
+            self.boot_time_ms,
+            self.q,
+            self.thrust,
         )
 
     def run(self, sender, receiver):
@@ -38,6 +41,4 @@ class AttitudeSetpointProtocol(MAVProtocol):
             gs = np.linalg.norm([self.imu.xac, self.imu.yac, self.imu.zac])
             if gs > highest:
                 highest = gs
-            #print(f"highest G: {highest}", flush=True)
-
-        
+            # print(f"highest G: {highest}", flush=True)

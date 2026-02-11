@@ -12,13 +12,17 @@ boot_time_ms = int(time.time() * 1000)
 local_pos = messages.LocalPositionNED()
 device.add_listener(local_pos)
 
-request_local_pos = protocols.RequestMessageProtocol(messages.IntervalMessageID.LOCAL_POSITION_NED, rate_hz=50.0)
+request_local_pos = protocols.RequestMessageProtocol(
+    messages.IntervalMessageID.LOCAL_POSITION_NED, rate_hz=50.0
+)
 device.run_protocol(request_local_pos)
 
 imu = messages.RawIMU()
 device.add_listener(imu)
 
-request_imu = protocols.RequestMessageProtocol(messages.IntervalMessageID.RAW_IMU, rate_hz=50.0)
+request_imu = protocols.RequestMessageProtocol(
+    messages.IntervalMessageID.RAW_IMU, rate_hz=50.0
+)
 device.run_protocol(request_imu)
 
 time.sleep(1)

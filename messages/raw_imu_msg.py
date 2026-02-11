@@ -3,7 +3,6 @@ from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class RawIMU(MAVMessage):
-
     def __init__(self):
         super().__init__("RAW_IMU")
         self.xac = 0.0
