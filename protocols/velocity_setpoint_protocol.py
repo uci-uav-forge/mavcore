@@ -39,7 +39,7 @@ class VelocitySetpointProtocol(MAVProtocol):
         self.log_func = log_func
 
         # Base speed for mission phase
-        self.base_speed = self.SPEED_PROFILES.get(mission_phase, 10.0)
+        self.base_speed = 10.0
 
         self.velocity_msg = SetpointVelocity(
             self.target_system, self.target_component, self.boot_time_ms, 0.0, 0.0, 0.0
