@@ -48,7 +48,11 @@ class VelocitySetpointProtocol(MAVProtocol):
         self.ack_msg = CommandAck()
 
     def calculate_velocity_vector(
-        self, current_pos: np.ndarray, target_pos: np.ndarray, target_speed: float, slow_on_approach: bool = True
+        self,
+        current_pos: np.ndarray,
+        target_pos: np.ndarray,
+        target_speed: float,
+        slow_on_approach: bool = True,
     ):
         """
         Convert waypoint position to velocity vector:
@@ -142,7 +146,10 @@ class VelocitySetpointProtocol(MAVProtocol):
                     break
 
                 velocity_vector = self.calculate_velocity_vector(
-                    current_position, waypoint_coords, optimal_speed, self.slow_on_approach
+                    current_position,
+                    waypoint_coords,
+                    optimal_speed,
+                    self.slow_on_approach,
                 )
 
                 self.velocity_msg.load(velocity_vector)
