@@ -25,7 +25,7 @@ class VelocitySetpointProtocol(MAVProtocol):
         waypoints: list[Waypoint],
         boot_time_ms: int,
         log_func=lambda msg: print(msg),
-        mission_phase: str = "cruise",
+        slow_on_approach: bool = True,
         target_system: int = 1,
         target_component: int = 0,
     ):
@@ -33,13 +33,13 @@ class VelocitySetpointProtocol(MAVProtocol):
         self.current_pos = current_pos
         self.waypoints = waypoints
         self.boot_time_ms = boot_time_ms
-        self.mission_phase = mission_phase
+        self.slow_on_approach = slow_on_approach
         self.target_system = target_system
         self.target_component = target_component
         self.log_func = log_func
 
         # Base speed for mission phase
-        self.base_speed = self.SPEED_PROFILES.get(mission_phase, 10.0)
+        self.base_speed = 10.0
 
         self.velocity_msg = SetpointVelocity(
             self.target_system, self.target_component, self.boot_time_ms, 0.0, 0.0, 0.0
@@ -48,7 +48,11 @@ class VelocitySetpointProtocol(MAVProtocol):
         self.ack_msg = CommandAck()
 
     def calculate_velocity_vector(
-        self, current_pos: np.ndarray, target_pos: np.ndarray, target_speed: float
+        self,
+        current_pos: np.ndarray,
+        target_pos: np.ndarray,
+        target_speed: float,
+        slow_on_approach: bool = True,
     ):
         """
         Convert waypoint position to velocity vector:
@@ -70,7 +74,7 @@ class VelocitySetpointProtocol(MAVProtocol):
         velocity = unit_direction * target_speed
 
         # Slow down when close to/approaching waypoint
-        if distance < 15.0:
+        if slow_on_approach and distance < 15.0:
             velocity /= 3.0
 
         return velocity
@@ -142,7 +146,10 @@ class VelocitySetpointProtocol(MAVProtocol):
                     break
 
                 velocity_vector = self.calculate_velocity_vector(
-                    current_position, waypoint_coords, optimal_speed
+                    current_position,
+                    waypoint_coords,
+                    optimal_speed,
+                    self.slow_on_approach,
                 )
 
                 self.velocity_msg.load(velocity_vector)
