@@ -29,6 +29,7 @@ from mavcore.messages.local_position_msg import (
 from mavcore.messages.local_position_msg import (
     LocalPosition as LocalPositionNED,
 )
+from mavcore.messages.local_position_cov_msg import LocalPositionCov as LocalPositionCov
 from mavcore.messages.mission_ack_msg import MissionAck as MissionAck
 from mavcore.messages.mission_request_msg import MissionRequestInt as MissionRequestInt
 from mavcore.messages.mission_request_msg import MissionType as MissionType
