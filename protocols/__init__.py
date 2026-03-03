@@ -29,6 +29,9 @@ from mavcore.protocols.fence_upload_protocol import (
 from mavcore.protocols.velocity_setpoint_protocol import (
     VelocitySetpointProtocol as VelocitySetpointProtocol,
 )
+from mavcore.protocols.moving_drop_protocol import (
+    MovingDropProtocol as MovingDropProtocol,
+)
 from mavcore.protocols.rc_override_protocol import (
     RCOverrideProtocol as RCOverrideProtocol,
 )
