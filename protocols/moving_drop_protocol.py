@@ -132,13 +132,9 @@ class MovingDropProtocol(MAVProtocol):
                 if distance <= waypoint.radius:
                     if is_release:
                         # Don't stop — fly through to next waypoint
-                        self.log_func(
-                            "[MovingDrop] Passing through release point"
-                        )
+                        self.log_func("[MovingDrop] Passing through release point")
                     else:
-                        self.log_func(
-                            f"[MovingDrop] Reached waypoint {i + 1}"
-                        )
+                        self.log_func(f"[MovingDrop] Reached waypoint {i + 1}")
                         # Brief zero-velocity command on non-critical waypoints
                         self.velocity_msg.load(np.zeros(3))
                         sender.send_msg(self.velocity_msg)
