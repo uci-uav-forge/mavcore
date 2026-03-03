@@ -1,25 +1,6 @@
 """
 MovingDropProtocol – Fly a velocity-controlled trajectory and trigger
 a payload drop at a specific waypoint index.
-
-This extends the velocity-setpoint paradigm used by VelocitySetpointProtocol
-but adds drop-trigger logic:
-
-    1.  Navigate through waypoints using velocity vectors (same as goto).
-    2.  At every control tick, check whether we have reached the *release*
-        waypoint (identified by ``release_index``).
-    3.  When the release waypoint radius is entered, immediately call
-        ``drop_callback()`` — which is wired to PayloadManager.drop_bottle()
-        or drop_beacon() by the caller.
-    4.  Do **not** stop or slow down at the release point; keep flying
-        through to the exit waypoint so the payload inherits full velocity.
-
-Key differences from VelocitySetpointProtocol:
-    • ``slow_on_approach`` is forced OFF for the release waypoint so constant
-      speed is maintained through the drop.
-    • A ``drop_callback`` is invoked exactly once when the release radius is
-      crossed.
-    • The protocol logs timestamped drop events for post-flight analysis.
 """
 
 from mavcore.mav_protocol import MAVProtocol
@@ -33,24 +14,6 @@ from typing import Callable
 class MovingDropProtocol(MAVProtocol):
     """
     Velocity-controlled waypoint navigation with mid-flight payload release.
-
-    Parameters
-    ----------
-    current_pos : LocalPositionNED
-        Live position listener from the flight controller.
-    waypoints : list[Waypoint]
-        Ordered waypoints produced by MovingDrop.get_waypoints().
-    release_index : int
-        Index into *waypoints* where the drop should happen (typically 2).
-    drop_callback : callable
-        Function to call when the release point is reached.  Expected
-        signature: ``() -> bool``.  Should trigger the servo/payload.
-    boot_time_ms : int
-        Milliseconds since system boot (for MAVLink time sync).
-    log_func : callable
-        Logging function.
-    target_system / target_component : int
-        MAVLink target IDs.
     """
 
     def __init__(
@@ -85,8 +48,6 @@ class MovingDropProtocol(MAVProtocol):
             0.0,
         )
 
-    # ---- helpers ----
-
     @staticmethod
     def _velocity_vector(
         current: np.ndarray,
@@ -99,8 +60,6 @@ class MovingDropProtocol(MAVProtocol):
         if dist < 0.1:
             return np.zeros(3)
         return (direction / dist) * speed
-
-    # ---- protocol entry point ----
 
     def run(self, sender, receiver):
         """
@@ -120,7 +79,6 @@ class MovingDropProtocol(MAVProtocol):
                 current_position = self.current_pos.get_pos_ned()
                 distance = np.linalg.norm(wp_coords - current_position)
 
-                # ---- release check ----
                 if is_release and not self._dropped and distance <= waypoint.radius:
                     self.log_func(
                         f"[MovingDrop] >>> RELEASE triggered at d={distance:.2f}m <<<"
@@ -128,7 +86,6 @@ class MovingDropProtocol(MAVProtocol):
                     self._dropped = True
                     self.drop_callback()
 
-                # ---- waypoint reached ----
                 if distance <= waypoint.radius:
                     if is_release:
                         # Don't stop — fly through to next waypoint
@@ -140,7 +97,6 @@ class MovingDropProtocol(MAVProtocol):
                         sender.send_msg(self.velocity_msg)
                     break
 
-                # ---- velocity command ----
                 velocity = self._velocity_vector(
                     current_position, wp_coords, waypoint.speed
                 )
