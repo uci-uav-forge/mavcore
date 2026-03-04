@@ -1,60 +1,60 @@
 # KEEP ALPHABETICAL ORDER
 
-from mavcore.messages.arm_msg import Arm as Arm
-from mavcore.messages.attitude_msg import Attitude as Attitude
-from mavcore.messages.attitude_quat_msg import AttitudeQuat as AttitudeQuat
-from mavcore.messages.battery_status_msg import (
+from .arm_msg import Arm as Arm
+from .attitude_msg import Attitude as Attitude
+from .attitude_quat_msg import AttitudeQuat as AttitudeQuat
+from .battery_status_msg import (
     BatteryFunction as BatteryFunction,
     BatteryStatus as BatteryStatus,
     BatteryType as BatteryType,
 )
-from mavcore.messages.command_ack_msg import CommandAck as CommandAck
-from mavcore.messages.fence_mission_msgs import (
+from .command_ack_msg import CommandAck as CommandAck
+from .fence_mission_msgs import (
     FenceMissionClearAll as FenceMissionClearAll,
     FenceMissionCount as FenceMissionCount,
     FenceMissionItemInt as FenceMissionItemInt,
 )
-from mavcore.messages.gps_raw_int_msg import FixType as FixType
-from mavcore.messages.heartbeat_msg import FlightMode as FlightMode
-from mavcore.messages.full_pose_msg import FullPose as FullPose
-from mavcore.messages.global_position_msg import GlobalPosition as GlobalPosition
-from mavcore.messages.gps_raw_int_msg import GPSRaw as GPSRaw
-from mavcore.messages.heartbeat_msg import Heartbeat as Heartbeat
-from mavcore.messages.request_msg_interval_msg import (
+from .gps_raw_int_msg import FixType as FixType
+from .heartbeat_msg import FlightMode as FlightMode
+from .full_pose_msg import FullPose as FullPose
+from .global_position_msg import GlobalPosition as GlobalPosition
+from .gps_raw_int_msg import GPSRaw as GPSRaw
+from .heartbeat_msg import Heartbeat as Heartbeat
+from .request_msg_interval_msg import (
     IntervalMessageID as IntervalMessageID,
 )
-from mavcore.messages.local_position_msg import (
+from .local_position_msg import (
     LocalPosition as LocalPosition,
 )
-from mavcore.messages.local_position_msg import (
+from .local_position_msg import (
     LocalPosition as LocalPositionNED,
 )
-from mavcore.messages.mission_ack_msg import MissionAck as MissionAck
-from mavcore.messages.mission_request_msg import MissionRequestInt as MissionRequestInt
-from mavcore.messages.mission_request_msg import MissionType as MissionType
-from mavcore.messages.mission_ack_msg import MissionResult as MissionResult
-from mavcore.messages.command_ack_msg import MAVResult as MAVResult
-from mavcore.messages.heartbeat_msg import MAVState as MAVState
-from mavcore.messages.takeoff_msg import MAVFrame as MAVFrame
-from mavcore.messages.status_text_msg import MAVSeverity as MAVSeverity
-from mavcore.messages.raw_imu_msg import RawIMU as RawIMU
-from mavcore.messages.rc_channels_msg import RCChannels as RCChannels
-from mavcore.messages.rc_override_msg import RCOverride as RCOverride
-from mavcore.messages.reboot_msg import RebootMsg as RebootMsg
-from mavcore.messages.request_msg_interval_msg import (
+from .mission_ack_msg import MissionAck as MissionAck
+from .mission_request_msg import MissionRequestInt as MissionRequestInt
+from .mission_request_msg import MissionType as MissionType
+from .mission_ack_msg import MissionResult as MissionResult
+from .command_ack_msg import MAVResult as MAVResult
+from .heartbeat_msg import MAVState as MAVState
+from .takeoff_msg import MAVFrame as MAVFrame
+from .status_text_msg import MAVSeverity as MAVSeverity
+from .raw_imu_msg import RawIMU as RawIMU
+from .rc_channels_msg import RCChannels as RCChannels
+from .rc_override_msg import RCOverride as RCOverride
+from .reboot_msg import RebootMsg as RebootMsg
+from .request_msg_interval_msg import (
     RequestMessageInterval as RequestMessageInterval,
 )
-from mavcore.messages.set_home_msg import SetHome as SetHome
-from mavcore.messages.set_mode_msg import SetMode as SetMode
-from mavcore.messages.attitude_target_msg import SetpointAttitude as SetpointAttitude
-from mavcore.messages.setpoint_local_msg import SetpointLocal as SetpointLocal
-from mavcore.messages.setpoint_velocity_msg import SetpointVelocity as SetpointVelocity
-from mavcore.messages.status_text_msg import StatusText as StatusText
-from mavcore.messages.system_time_msg import SystemTime as SystemTime
-from mavcore.messages.takeoff_msg import Takeoff as Takeoff
-from mavcore.messages.vfr_hud_msg import VFRHUD as VFRHUD
-from mavcore.messages.accel_calibration_msg import AccelCal
-from mavcore.messages.baro_calibration_msg import BaroCal
-from mavcore.messages.compass_calibration_msg import CompassCal
-from mavcore.messages.level_calibration_msg import LevelCal
-from mavcore.messages.sys_status_msg import SysStatus
+from .set_home_msg import SetHome as SetHome
+from .set_mode_msg import SetMode as SetMode
+from .attitude_target_msg import SetpointAttitude as SetpointAttitude
+from .setpoint_local_msg import SetpointLocal as SetpointLocal
+from .setpoint_velocity_msg import SetpointVelocity as SetpointVelocity
+from .status_text_msg import StatusText as StatusText
+from .system_time_msg import SystemTime as SystemTime
+from .takeoff_msg import Takeoff as Takeoff
+from .vfr_hud_msg import VFRHUD as VFRHUD
+from .accel_calibration_msg import AccelCal
+from .baro_calibration_msg import BaroCal
+from .compass_calibration_msg import CompassCal
+from .level_calibration_msg import LevelCal
+from .sys_status_msg import SysStatus

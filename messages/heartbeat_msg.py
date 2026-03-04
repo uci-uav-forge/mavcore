@@ -3,7 +3,7 @@ from enum import IntEnum
 from typing import Any, Callable
 import time
 
-from mavcore.mav_message import MAVMessage, thread_safe
+from ..mav_message import MAVMessage, thread_safe
 
 MAV_MODE_CUSTOM = 0
 NO_FLAGS = 0

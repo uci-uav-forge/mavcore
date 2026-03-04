@@ -1,12 +1,12 @@
-from mavcore.mav_message import MAVMessage, thread_safe
-from mavcore.messages.attitude_msg import Attitude
-from mavcore.messages.attitude_quat_msg import AttitudeQuat
-from mavcore.messages.local_position_msg import LocalPosition
-from mavcore.messages.global_position_msg import GlobalPosition
+from ..mav_message import MAVMessage, thread_safe
+from .attitude_msg import Attitude
+from .attitude_quat_msg import AttitudeQuat
+from .local_position_msg import LocalPosition
+from .global_position_msg import GlobalPosition
 
 import bisect
 import numpy as np
-from mavcore.types.mav_pose import Pose
+from ..mavtypes.mav_pose import Pose
 
 
 class FullPose(MAVMessage):

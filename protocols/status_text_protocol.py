@@ -1,5 +1,5 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages.status_text_msg import MAVSeverity, StatusText
+from ..mav_protocol import MAVProtocol
+from ..messages.status_text_msg import MAVSeverity, StatusText
 
 
 class StatusTextProtocol(MAVProtocol):

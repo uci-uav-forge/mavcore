@@ -1,6 +1,6 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import Arm
-from mavcore.messages.command_ack_msg import CommandAck
+from ..mav_protocol import MAVProtocol
+from ..messages import Arm
+from ..messages.command_ack_msg import CommandAck
 
 
 class ArmProtocol(MAVProtocol):

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any
 import pymavlink.dialects.v20.all as dialect
 
-from mavcore.mav_message import MAVMessage, thread_safe
+from ..mav_message import MAVMessage, thread_safe
 
 
 class BatteryFunction(Enum):
