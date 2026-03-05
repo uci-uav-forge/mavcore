@@ -12,4 +12,7 @@ battery_msg = messages.BatteryStatus()
 battery_msg.temp = -12345
 send_battery_status = protocols.UpdateBatteryProtocol(battery_msg)
 
-device.run_protocol(send_battery_status)
+
+while True:
+    device.run_protocol(send_battery_status)
+    time.sleep(1.0)

@@ -12,4 +12,4 @@ device.add_listener(bs_msg)
 
 while True:
     print(f"temp: {bs_msg.temp}")
-    time.sleep(5.0)
+    time.sleep(1.0)
