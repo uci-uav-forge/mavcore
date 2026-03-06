@@ -1,5 +1,5 @@
-from mavcore.mav_sender import Sender
-from mavcore.mav_receiver import Receiver
+from .mav_sender import Sender
+from .mav_receiver import Receiver
 
 
 class MAVProtocol:

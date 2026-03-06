@@ -1,5 +1,5 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import BatteryStatus
+from ..mav_protocol import MAVProtocol
+from ..messages import BatteryStatus
 
 
 class UpdateBatteryProtocol(MAVProtocol):

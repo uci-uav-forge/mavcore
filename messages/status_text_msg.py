@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage, thread_safe
+from ..mav_message import MAVMessage, thread_safe
 
 
 class MAVSeverity(Enum):

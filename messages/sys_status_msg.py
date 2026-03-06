@@ -1,6 +1,6 @@
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage
+from ..mav_message import MAVMessage
 
 
 class SysStatus(MAVMessage):

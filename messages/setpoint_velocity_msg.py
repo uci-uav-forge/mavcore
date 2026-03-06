@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 import time
 import numpy as np
-from mavcore.mav_message import MAVMessage
+from ..mav_message import MAVMessage
 
 
 class SetpointVelocity(MAVMessage):
