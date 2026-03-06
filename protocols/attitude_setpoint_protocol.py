@@ -22,7 +22,7 @@ class AttitudeSetpointProtocol(MAVProtocol):
         self.target_system = target_system
         self.target_component = target_component
 
-        self.transition_time = 2.0
+        self.transition_time = 0.5
 
         self.q = np.array([0.815, 0.0, -0.58, 0.0])
         self.level_q = np.array([1.0, 0.0, 0.0, 0.0])
@@ -39,7 +39,7 @@ class AttitudeSetpointProtocol(MAVProtocol):
     def run(self, sender, receiver):
         highest = 0.0
         start_time = time.time()
-        while self.current_pos.get_pos_ned()[2] < -200.0:
+        while self.current_pos.get_pos_ned()[2] < -60.0:
             if time.time() - start_time < self.transition_time:
                 new_q = []
                 for i in range(4):

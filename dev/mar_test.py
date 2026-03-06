@@ -39,17 +39,36 @@ device.run_protocol(request_arm)
 request_guided = protocols.SetModeProtocol(messages.FlightMode.GUIDED)
 device.run_protocol(request_guided)
 
-takeoff = protocols.TakeoffProtocol(300.0)
+takeoff = protocols.TakeoffProtocol(100.0)
 device.run_protocol(takeoff)
 
-while local_pos.get_pos_ned()[2] > -295.0:
+while local_pos.get_pos_ned()[2] > -99.0:
     print(f"Altitude: {local_pos.get_pos_ned()[2]} m", flush=True)
     time.sleep(1)
 
 dive = protocols.AttitudeSetpointProtocol(local_pos, imu, boot_time_ms)
 device.run_protocol(dive)
 
-request_brake = protocols.SetModeProtocol(messages.FlightMode.BRAKE)
+request_brake = protocols.SetModeProtocol(messages.FlightMode.STABILIZE)
+device.run_protocol(request_brake)
+
+channels = np.zeros(18, dtype=np.uint16)
+channels[2] = 1800
+rc_protocol = protocols.RCOverrideProtocol(channels=channels)
+
+start_time = time.time()
+while time.time() - start_time < 8.0:
+    device.run_protocol(rc_protocol)
+
+    print("RC Override message sent.")
+    time.sleep(0.2)
+
+channels = np.zeros(18, dtype=np.uint16)
+channels[2] = 1500
+rc_protocol = protocols.RCOverrideProtocol(channels=channels)
+device.run_protocol(rc_protocol)
+
+request_brake = protocols.SetModeProtocol(messages.FlightMode.RTL)
 device.run_protocol(request_brake)
 
 highest = 0.0
