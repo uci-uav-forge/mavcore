@@ -41,7 +41,7 @@ class FullPose(MAVMessage):
             return self._get_interpolated_pose(timestamp)
         return Pose.from_array(
             position=self.local_position.get_pos_enu(),
-            quat=self.attitude.get_quat(),
+            quat=self.attitude.get_quat_enu(),
             order=True,
             timestamp=self.local_position.timestamp,
         )
