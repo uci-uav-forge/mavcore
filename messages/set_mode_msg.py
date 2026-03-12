@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 
-from mavcore.mav_message import MAVMessage, thread_safe
-from mavcore.messages.heartbeat_msg import FlightMode
+from ..mav_message import MAVMessage, thread_safe
+from .heartbeat_msg import FlightMode
 
 
 class SetMode(MAVMessage):

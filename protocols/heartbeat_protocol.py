@@ -1,7 +1,7 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.mav_sender import Sender
-from mavcore.mav_receiver import Receiver
-from mavcore.messages.heartbeat_msg import Heartbeat
+from ..mav_protocol import MAVProtocol
+from ..mav_sender import Sender
+from ..mav_receiver import Receiver
+from ..messages.heartbeat_msg import Heartbeat
 
 
 class HeartbeatProtocol(MAVProtocol):

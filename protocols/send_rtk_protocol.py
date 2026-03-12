@@ -1,6 +1,6 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages.rtk_msg import RTKData
-from mavcore.messages.command_ack_msg import CommandAck
+from ..mav_protocol import MAVProtocol
+from ..messages.rtk_msg import RTKData
+from ..messages.command_ack_msg import CommandAck
 
 GPS_RTCM_MAX_LENGTH = 180
 

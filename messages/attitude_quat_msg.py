@@ -1,4 +1,4 @@
-from mavcore.mav_message import MAVMessage, thread_safe
+from ..mav_message import MAVMessage, thread_safe
 
 import numpy as np
 
@@ -40,7 +40,20 @@ class AttitudeQuat(MAVMessage):
 
     @thread_safe
     def get_quat(self) -> np.ndarray:
+        """Returns quaternion in NED frame as (w, x, y, z)."""
         return np.array([self.w, self.x, self.y, self.z])
+
+    @thread_safe
+    def get_quat_enu(self) -> np.ndarray:
+        """Returns quaternion converted from NED to ENU frame as (w, x, y, z).
+
+        NED axes: X=North, Y=East, Z=Down
+        ENU axes: X=East,  Y=North, Z=Up
+
+        Mapping: NED_x -> ENU_y, NED_y -> ENU_x, NED_z -> -ENU_z
+        So (w, x_N, y_E, z_D) -> (w, y_E, x_N, -z_D)
+        """
+        return np.array([self.w, self.y, self.x, -self.z])
 
     @thread_safe
     def __repr__(self) -> str:

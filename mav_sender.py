@@ -2,8 +2,8 @@ import time
 import threading
 import pymavlink.mavutil as utility
 
-from mavcore.mav_message import MAVMessage
-from mavcore.messages.rc_override_msg import RCOverride
+from .mav_message import MAVMessage
+from .messages.rc_override_msg import RCOverride
 
 
 class Sender:

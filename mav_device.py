@@ -2,10 +2,10 @@ import pymavlink.mavutil as utility
 import threading
 import time
 
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.mav_receiver import Receiver
-from mavcore.mav_sender import Sender
-from mavcore.mav_message import MAVMessage
+from .mav_protocol import MAVProtocol
+from .mav_receiver import Receiver
+from .mav_sender import Sender
+from .mav_message import MAVMessage
 
 
 class MAVDevice:

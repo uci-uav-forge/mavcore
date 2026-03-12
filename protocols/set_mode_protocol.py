@@ -1,6 +1,6 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import SetMode, FlightMode
-from mavcore.messages.command_ack_msg import CommandAck
+from ..mav_protocol import MAVProtocol
+from ..messages import SetMode, FlightMode
+from ..messages.command_ack_msg import CommandAck
 
 
 class SetModeProtocol(MAVProtocol):

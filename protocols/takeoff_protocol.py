@@ -1,5 +1,5 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import Takeoff, CommandAck
+from ..mav_protocol import MAVProtocol
+from ..messages import Takeoff, CommandAck
 
 
 class TakeoffProtocol(MAVProtocol):

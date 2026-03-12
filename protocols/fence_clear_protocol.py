@@ -1,9 +1,9 @@
 import time
-from mavcore.messages.command_ack_msg import CommandAck
+from ..messages.command_ack_msg import CommandAck
 from pymavlink.dialects.v20 import common as mav
 
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import FenceMissionClearAll
+from ..mav_protocol import MAVProtocol
+from ..messages import FenceMissionClearAll
 
 
 class FenceClearProtocol(MAVProtocol):

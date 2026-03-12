@@ -1,5 +1,5 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import RCOverride
+from ..mav_protocol import MAVProtocol
+from ..messages import RCOverride
 import numpy as np
 
 

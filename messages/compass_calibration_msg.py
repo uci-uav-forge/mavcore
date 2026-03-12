@@ -1,5 +1,5 @@
 import pymavlink.dialects.v20.all as dialect
-from mavcore.mav_message import MAVMessage
+from ..mav_message import MAVMessage
 
 
 class CompassCal(MAVMessage):
