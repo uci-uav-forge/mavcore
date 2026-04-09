@@ -1,6 +1,4 @@
-import time
-from ..messages.command_ack_msg import CommandAck
-from pymavlink.dialects.v20 import common as mav
+from ..messages import MissionAck, MissionType
 
 from ..mav_protocol import MAVProtocol
 from ..messages import FenceMissionClearAll
@@ -21,7 +19,7 @@ class FenceClearProtocol(MAVProtocol):
             target_component=self.target_component,
         )
 
-        self.ack_msg = CommandAck()
+        self.ack_msg = MissionAck()
 
     def run(self, sender, receiver):
         future_ack = receiver.wait_for_msg(self.ack_msg, blocking=False)
