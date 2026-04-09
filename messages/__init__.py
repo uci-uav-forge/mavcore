@@ -15,7 +15,6 @@ from .fence_mission_msgs import (
     FenceMissionItemInt as FenceMissionItemInt,
 )
 from .gps_raw_int_msg import FixType as FixType
-from .heartbeat_msg import FlightMode as FlightMode
 from .full_pose_msg import FullPose as FullPose
 from .global_position_msg import GlobalPosition as GlobalPosition
 from .gps_raw_int_msg import GPSRaw as GPSRaw
