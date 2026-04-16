@@ -1,6 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 import time
 import numpy as np
+import math
 from ..mav_message import MAVMessage
 
 
@@ -31,6 +32,7 @@ class SetpointVelocity(MAVMessage):
         self.vz = vz  # velocity Down in m/s
 
     def encode(self, system_id, component_id):
+        target_yaw = math.atan2(self.vy, self.vx)
         return dialect.MAVLink_set_position_target_local_ned_message(
             time_boot_ms=int(time.time() * 1000 - self.boot_time_ms),
             target_system=int(self.target_system),
@@ -48,7 +50,7 @@ class SetpointVelocity(MAVMessage):
             afx=float(0.0),
             afy=float(0.0),
             afz=float(0.0),
-            yaw=float(0.0),
+            yaw=float(target_yaw),
             yaw_rate=float(0.0),
         )
 
