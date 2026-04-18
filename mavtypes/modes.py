@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class FlightMode(IntEnum):
     UNKNOWN = -1
     STABILIZE = 0
@@ -28,6 +29,7 @@ class FlightMode(IntEnum):
     HELI_AUTOROTATE = 26
     AUTO_RTL = 27
     TURTLE = 28
+
 
 class FlightModePlane(IntEnum):
     UNKNOWN = -1

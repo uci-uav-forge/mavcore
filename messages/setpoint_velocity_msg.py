@@ -19,7 +19,7 @@ class SetpointVelocity(MAVMessage):
         vx: float,
         vy: float,
         vz: float,
-        do_yaw: bool = True
+        do_yaw: bool = True,
     ):
         super().__init__("CUSTOM_SETPOINT_VELOCITY")
         self.target_system = target_system

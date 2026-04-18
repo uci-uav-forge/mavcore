@@ -10,7 +10,10 @@ class SetModeProtocol(MAVProtocol):
     """
 
     def __init__(
-        self, mode: FlightMode | FlightModePlane, target_system: int = 1, target_component: int = 0
+        self,
+        mode: FlightMode | FlightModePlane,
+        target_system: int = 1,
+        target_component: int = 0,
     ):
         super().__init__()
         self.mode = mode

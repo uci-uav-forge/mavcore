@@ -9,7 +9,12 @@ class SetMode(MAVMessage):
     Allows to set mode of device. Uses FlightMode defined in heartbeat_msg.
     """
 
-    def __init__(self, target_system: int, target_component: int, mode: FlightMode | FlightModePlane):
+    def __init__(
+        self,
+        target_system: int,
+        target_component: int,
+        mode: FlightMode | FlightModePlane,
+    ):
         super().__init__("CUSTOM_SET_MODE")
         self.target_system = target_system
         self.target_component = target_component
