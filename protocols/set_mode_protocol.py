@@ -1,5 +1,6 @@
 from ..mav_protocol import MAVProtocol
-from ..messages import SetMode, FlightMode
+from ..messages import SetMode
+from ..mavtypes import FlightMode, FlightModePlane
 from ..messages.command_ack_msg import CommandAck
 
 
@@ -9,7 +10,10 @@ class SetModeProtocol(MAVProtocol):
     """
 
     def __init__(
-        self, mode: FlightMode, target_system: int = 1, target_component: int = 0
+        self,
+        mode: FlightMode | FlightModePlane,
+        target_system: int = 1,
+        target_component: int = 0,
     ):
         super().__init__()
         self.mode = mode

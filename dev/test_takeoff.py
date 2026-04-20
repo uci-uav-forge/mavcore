@@ -2,6 +2,9 @@ import mavcore.mav_device as mav_device
 import mavcore.messages as messages
 import mavcore.protocols as protocols
 import time
+from mavcore.mavtypes import FlightMode
+
+########## NOTE THIS WILL ONLY WORK FOR COPTER ##########
 
 device = mav_device.MAVDevice("udp:127.0.0.1:14550")
 
@@ -25,7 +28,7 @@ while True:
 # while True:
 time.sleep(2)
 set_mode_protocol = protocols.SetModeProtocol(
-    messages.FlightMode.GUIDED
+    FlightMode.GUIDED
 )  # 15/AUTOTUNE is GUIDED in plane
 print("--Setting GUIDED mode")
 device.run_protocol(set_mode_protocol)
@@ -42,7 +45,7 @@ while abs(fp.get_local_position().position[2] - 20.0) > 1.0:
     time.sleep(0.2)
 print("Takeoff complete")
 time.sleep(2)
-set_mode_protocol = protocols.SetModeProtocol(messages.FlightMode.RTL)
+set_mode_protocol = protocols.SetModeProtocol(FlightMode.RTL)
 print("--Setting RTL mode")
 device.run_protocol(set_mode_protocol)
 print(f"Set RTL mode ack: {set_mode_protocol.ack_msg}")

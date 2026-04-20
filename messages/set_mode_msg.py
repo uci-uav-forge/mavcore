@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 
 from ..mav_message import MAVMessage, thread_safe
-from .heartbeat_msg import FlightMode
+from ..mavtypes import FlightMode, FlightModePlane
 
 
 class SetMode(MAVMessage):
@@ -9,7 +9,12 @@ class SetMode(MAVMessage):
     Allows to set mode of device. Uses FlightMode defined in heartbeat_msg.
     """
 
-    def __init__(self, target_system: int, target_component: int, mode: FlightMode):
+    def __init__(
+        self,
+        target_system: int,
+        target_component: int,
+        mode: FlightMode | FlightModePlane,
+    ):
         super().__init__("CUSTOM_SET_MODE")
         self.target_system = target_system
         self.target_component = target_component
