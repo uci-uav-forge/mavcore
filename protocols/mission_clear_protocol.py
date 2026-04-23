@@ -23,7 +23,9 @@ class MissionClearProtocol(MAVProtocol):
             if future_ack.timestamp == 0.0:
                 continue
             if self.ack_msg.result != MissionResult.ACCEPTED:
-                raise RuntimeError(f"Mission clear rejected: {self.ack_msg.result.name}")
+                raise RuntimeError(
+                    f"Mission clear rejected: {self.ack_msg.result.name}"
+                )
             return self.ack_msg
 
         raise TimeoutError("MISSION_CLEAR_ALL did not receive MISSION_ACK")

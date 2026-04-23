@@ -23,7 +23,9 @@ class MissionUploadProtocol(MAVProtocol):
             self._coerce_waypoint(waypoint, seq)
             for seq, waypoint in enumerate(waypoints)
         ]
-        self.count_msg = MissionCount(len(self.waypoints), target_system, target_component)
+        self.count_msg = MissionCount(
+            len(self.waypoints), target_system, target_component
+        )
         self.request_msg = MissionRequestInt()
         self.ack_msg = MissionAck()
         self.request_timeout_s = 1.5
