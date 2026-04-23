@@ -26,6 +26,8 @@ from .fence_clear_protocol import (
 from .fence_upload_protocol import (
     FenceUploadProtocol as FenceUploadProtocol,
 )
+from .mission_clear_protocol import MissionClearProtocol as MissionClearProtocol
+from .mission_upload_protocol import MissionUploadProtocol as MissionUploadProtocol
 from .velocity_setpoint_protocol import (
     VelocitySetpointProtocol as VelocitySetpointProtocol,
 )
