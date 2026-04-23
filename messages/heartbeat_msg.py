@@ -4,6 +4,7 @@ from typing import Any, Callable
 import time
 
 from ..mav_message import MAVMessage, thread_safe
+from ..mavtypes import FlightMode, FlightModePlane
 
 MAV_MODE_CUSTOM = 0
 NO_FLAGS = 0
