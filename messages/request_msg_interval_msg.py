@@ -16,7 +16,7 @@ class IntervalMessageID(Enum):
     RC_CHANNELS = 65
     VFR_HUD = 74
     BATTERY_STATUS = 147
-    WIND_COV = 231
+    WIND = 168
 
 
 class RequestMessageInterval(MAVMessage):
