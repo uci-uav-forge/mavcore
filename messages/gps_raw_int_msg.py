@@ -25,8 +25,8 @@ class GPSRaw(MAVMessage):
         self.fix_type = FixType(0)
         self.sats = -1  # number of satellites visible
         self.usec = 0
-        self.hacc = 0;
-        self.vacc = 0;
+        self.hacc = 0
+        self.vacc = 0
 
     def decode(self, msg):
         self.fix_type = FixType(msg.fix_type)
