@@ -57,3 +57,4 @@ from .baro_calibration_msg import BaroCal
 from .compass_calibration_msg import CompassCal
 from .level_calibration_msg import LevelCal
 from .sys_status_msg import SysStatus
+from .wind_cov_msg import WindCov as WindCov
