@@ -10,7 +10,7 @@ class Wind(MAVMessage):
         super().__init__("WIND")
         self.direction = 0.0
         self.speed = 0.0
-        speed_z = 0.0
+        self.speed_z = 0.0
 
     def decode(self, msg):
         self.direction = msg.direction
