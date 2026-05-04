@@ -64,13 +64,17 @@ class FullPose(MAVMessage):
         Maintains the buffer size by removing the oldest entry if necessary.
         """
         current_pose = self.get_local_position()
+        if self.attitude.timestamp == 0.0 or self.local_position.timestamp == 0.0:
+            return
+
         if abs(self.attitude.timestamp - self.local_position.timestamp) > 0.1:
             print(
                 f"Warning: Discarding pose since Attitude({self.attitude.get_hz()}hz) and Local Position({self.local_position.get_hz()}hz) timestamps differ by more than 100 ms."
             )
             return
+
         self.update_timestamp(
-            np.average([self.attitude.timestamp, self.local_position.timestamp])
+            float(np.average([self.attitude.timestamp, self.local_position.timestamp]))
         )
 
         self.pose_buffer.append(current_pose)
