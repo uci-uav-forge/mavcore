@@ -1,6 +1,8 @@
 from ..mav_protocol import MAVProtocol
 from ..messages import SetpointVelocity, CommandAck, LocalPositionNED
 from ..mavtypes import Waypoint
+from gnc.util.dubins_path import DubinsPath
+from gnc.util import constants
 import time
 import numpy as np
 
@@ -41,6 +43,12 @@ class VelocitySetpointProtocol(MAVProtocol):
         # Base speed for mission phase
         self.base_speed = 10.0
 
+        
+        self.dubins_path = DubinsPath(
+            waypoints=self.waypoints,
+            speed=self.base_speed,
+        )
+
         self.velocity_msg = SetpointVelocity(
             self.target_system, self.target_component, self.boot_time_ms, 0.0, 0.0, 0.0
         )
@@ -79,79 +87,75 @@ class VelocitySetpointProtocol(MAVProtocol):
 
         return velocity
 
-    def calculate_turn_angle(self, wp1: Waypoint, wp2: Waypoint, wp3: Waypoint):
-        """
-        Calculate the turn angle at wp2 going wp1 -> wp2 -> wp3
-        """
-        # Vectors
-        v1 = np.array([wp2.x - wp1.x, wp2.y - wp1.y])
-        v2 = np.array([wp3.x - wp2.x, wp3.y - wp2.y])
-
-        # Normalize
-        v1_norm = v1 / (np.linalg.norm(v1))
-        v2_norm = v2 / (np.linalg.norm(v2))
-
-        # Calculate angle
-        dot_product = np.clip(np.dot(v1_norm, v2_norm), -1.0, 1.0)
-        angle_rad = np.arccos(dot_product)
-        return np.degrees(angle_rad)
-
-    def get_optimal_speed_for_waypoint(self, waypoint_idx: int) -> float:
-        """
-        Cornering optimization
-
-        """
-        # Slows down if last waypoint
-        if waypoint_idx >= len(self.waypoints) - 1:
-            return self.base_speed * 0.7
-
-        # Checka for upcoming turn
-        if waypoint_idx + 2 < len(self.waypoints):
-            wp_curr = self.waypoints[waypoint_idx]
-            wp_next = self.waypoints[waypoint_idx + 1]
-            wp_after = self.waypoints[waypoint_idx + 2]
-
-            turn_angle = self.calculate_turn_angle(wp_curr, wp_next, wp_after)
-
-            # Reduce speed based on sharpness of turn
-            if turn_angle > 90:
-                return self.base_speed * 0.6
-            elif turn_angle > 45:
-                return self.base_speed * 0.7
-            elif turn_angle > 20:  # May delete 20 degree check
-                return self.base_speed * 0.9
-
-        return self.base_speed
-
     def run(self, sender, receiver):
-        for i in range(len(self.waypoints)):
-            waypoint = self.waypoints[i]
+        waypoint_index = 0
+        last_logged_index = -1
+        while waypoint_index < len(self.waypoints):
+            waypoint = self.waypoints[waypoint_index]
             waypoint_coords = np.array([waypoint.x, waypoint.y, waypoint.z])
             optimal_speed = waypoint.speed
 
-            self.log_func(
-                f"[VelocityControl] Waypoint {i + 1}/{len(self.waypoints)} @ {optimal_speed:.1f} m/s"
+            if last_logged_index != waypoint_index:
+                self.log_func(
+                    f"[VelocityControl] Waypoint {waypoint_index + 1}/{len(self.waypoints)} @ {optimal_speed:.1f} m/s"
+                )
+                last_logged_index = waypoint_index
+
+            current_position = self.current_pos.get_pos_ned()
+            distance_to_waypoint = np.linalg.norm(waypoint_coords - current_position)
+            if distance_to_waypoint <= waypoint.radius:
+                self.log_func(f"[VelocityControl] Reached waypoint {waypoint_index + 1}")
+                self.velocity_msg.load(np.array([0.0, 0.0, 0.0]))
+                sender.send_msg(self.velocity_msg)
+                waypoint_index += 1
+                continue
+
+            self.dubins_path.update_waypoints(self.waypoints[waypoint_index:])
+            self.dubins_path.speed = optimal_speed
+
+            path_points = self.dubins_path.generate_horizon_path(
+                current_position,
             )
 
-            while True:
-                current_position = self.current_pos.get_pos_ned()
-                distance_to_waypoint = np.linalg.norm(
-                    waypoint_coords - current_position
-                )
+            target_point = self._select_lookahead_point(
+                current_position, path_points, self.dubins_path.step_size
+            )
 
-                if distance_to_waypoint <= waypoint.radius:
-                    self.log_func(f"[VelocityControl] Reached waypoint {i + 1}")
-                    self.velocity_msg.load(np.array([0.0, 0.0, 0.0]))
-                    sender.send_msg(self.velocity_msg)
-                    break
+            target_coords = np.array([target_point.x, target_point.y, target_point.z])
+            velocity_vector = self.calculate_velocity_vector(
+                current_position,
+                target_coords,
+                optimal_speed,
+                self.slow_on_approach,
+            )
 
-                velocity_vector = self.calculate_velocity_vector(
-                    current_position,
-                    waypoint_coords,
-                    optimal_speed,
-                    self.slow_on_approach,
-                )
+            self.velocity_msg.load(velocity_vector)
+            sender.send_msg(self.velocity_msg)
+            time.sleep(0.25)
 
-                self.velocity_msg.load(velocity_vector)
-                sender.send_msg(self.velocity_msg)
-                time.sleep(0.25)
+    @staticmethod
+    def _select_lookahead_point(
+        current_position: np.ndarray,
+        path_points: list[Waypoint],
+        min_distance: float,
+    ) -> Waypoint:
+        if not path_points:
+            return Waypoint(
+                float(current_position[0]),
+                float(current_position[1]),
+                float(current_position[2]),
+                0.0,
+                0.0,
+            )
+
+        if min_distance <= 0.0:
+            return path_points[-1]
+
+        for point in path_points:
+            dist = np.linalg.norm(
+                np.array([point.x, point.y, point.z]) - current_position
+            )
+            if dist >= min_distance * 0.5:
+                return point
+
+        return path_points[-1]
