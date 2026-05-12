@@ -2,7 +2,7 @@ import time
 import threading
 from queue import Queue
 from typing import Any
-from mavcore.mav_message import MAVMessage
+from .mav_message import MAVMessage
 
 
 class Receiver:

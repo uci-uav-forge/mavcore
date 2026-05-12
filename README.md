@@ -35,7 +35,7 @@ while True:
 
 ```python
 from mavcore.protocols import HeartbeatProtocol, SetModeProtocol
-from mavcore.messages import FlightMode
+from mavcore.mavtypes import FlightMode
 
 # Sends periodic heartbeats from device and sets mode
 hb_protocol = device.run_protocol(HeartbeatProtocol())  # will auto send at 1 hz

@@ -1,7 +1,7 @@
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage, thread_safe
-from mavcore.messages.mission_request_msg import MissionType
+from ..mav_message import MAVMessage, thread_safe
+from .mission_request_msg import MissionType
 
 
 from enum import IntEnum

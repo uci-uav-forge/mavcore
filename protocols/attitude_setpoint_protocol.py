@@ -1,7 +1,7 @@
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages.local_position_msg import LocalPosition as LocalPositionNED
-from mavcore.messages.raw_imu_msg import RawIMU
-from mavcore.messages.attitude_target_msg import SetpointAttitude
+from ..mav_protocol import MAVProtocol
+from ..messages.local_position_msg import LocalPosition as LocalPositionNED
+from ..messages.raw_imu_msg import RawIMU
+from ..messages.attitude_target_msg import SetpointAttitude
 import time
 import numpy as np
 

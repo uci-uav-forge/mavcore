@@ -1,12 +1,12 @@
-from mavcore.mav_message import MAVMessage, thread_safe
-from mavcore.messages.attitude_msg import Attitude
-from mavcore.messages.attitude_quat_msg import AttitudeQuat
-from mavcore.messages.local_position_msg import LocalPosition
-from mavcore.messages.global_position_msg import GlobalPosition
+from ..mav_message import MAVMessage, thread_safe
+from .attitude_msg import Attitude
+from .attitude_quat_msg import AttitudeQuat
+from .local_position_msg import LocalPosition
+from .global_position_msg import GlobalPosition
 
 import bisect
 import numpy as np
-from mavcore.types.mav_pose import Pose
+from ..mavtypes.mav_pose import Pose
 
 
 class FullPose(MAVMessage):
@@ -41,7 +41,7 @@ class FullPose(MAVMessage):
             return self._get_interpolated_pose(timestamp)
         return Pose.from_array(
             position=self.local_position.get_pos_enu(),
-            quat=self.attitude.get_quat(),
+            quat=self.attitude.get_quat_enu(),
             order=True,
             timestamp=self.local_position.timestamp,
         )
@@ -64,13 +64,17 @@ class FullPose(MAVMessage):
         Maintains the buffer size by removing the oldest entry if necessary.
         """
         current_pose = self.get_local_position()
+        if self.attitude.timestamp == 0.0 or self.local_position.timestamp == 0.0:
+            return
+
         if abs(self.attitude.timestamp - self.local_position.timestamp) > 0.1:
             print(
                 f"Warning: Discarding pose since Attitude({self.attitude.get_hz()}hz) and Local Position({self.local_position.get_hz()}hz) timestamps differ by more than 100 ms."
             )
             return
+
         self.update_timestamp(
-            np.average([self.attitude.timestamp, self.local_position.timestamp])
+            float(np.average([self.attitude.timestamp, self.local_position.timestamp]))
         )
 
         self.pose_buffer.append(current_pose)

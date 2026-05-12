@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 from enum import Enum
 
-from mavcore.mav_message import MAVMessage, thread_safe
+from ..mav_message import MAVMessage, thread_safe
 
 
 class IntervalMessageID(Enum):
@@ -16,6 +16,7 @@ class IntervalMessageID(Enum):
     RC_CHANNELS = 65
     VFR_HUD = 74
     BATTERY_STATUS = 147
+    WIND = 168
 
 
 class RequestMessageInterval(MAVMessage):

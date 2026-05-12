@@ -1,41 +1,41 @@
-from mavcore.protocols.attitude_setpoint_protocol import (
+from .attitude_setpoint_protocol import (
     AttitudeSetpointProtocol as AttitudeSetpointProtocol,
 )
-from mavcore.protocols.battery_update_protocol import (
+from .battery_update_protocol import (
     UpdateBatteryProtocol as UpdateBatteryProtocol,
 )
-from mavcore.protocols.heartbeat_protocol import HeartbeatProtocol as HeartbeatProtocol
-from mavcore.protocols.set_mode_protocol import SetModeProtocol as SetModeProtocol
-from mavcore.protocols.status_text_protocol import (
+from .heartbeat_protocol import HeartbeatProtocol as HeartbeatProtocol
+from .set_mode_protocol import SetModeProtocol as SetModeProtocol
+from .status_text_protocol import (
     StatusTextProtocol as StatusTextProtocol,
 )
-from mavcore.protocols.takeoff_protocol import TakeoffProtocol as TakeoffProtocol
-from mavcore.protocols.local_setpoint_protocol import (
+from .takeoff_protocol import TakeoffProtocol as TakeoffProtocol
+from .local_setpoint_protocol import (
     LocalSetpointProtocol as LocalSetpointProtocol,
 )
-from mavcore.protocols.arm_protocol import ArmProtocol as ArmProtocol
-from mavcore.protocols.request_msg_protocol import (
+from .arm_protocol import ArmProtocol as ArmProtocol
+from .request_msg_protocol import (
     RequestMessageProtocol as RequestMessageProtocol,
 )
-from mavcore.protocols.set_home_protocol import SetHomeProtocol as SetHomeProtocol
-from mavcore.protocols.reboot_protocol import RebootProtocol as RebootProtocol
+from .set_home_protocol import SetHomeProtocol as SetHomeProtocol
+from .reboot_protocol import RebootProtocol as RebootProtocol
 
-from mavcore.protocols.fence_clear_protocol import (
+from .fence_clear_protocol import (
     FenceClearProtocol as FenceClearProtocol,
 )
-from mavcore.protocols.fence_upload_protocol import (
+from .fence_upload_protocol import (
     FenceUploadProtocol as FenceUploadProtocol,
 )
-from mavcore.protocols.velocity_setpoint_protocol import (
+from .velocity_setpoint_protocol import (
     VelocitySetpointProtocol as VelocitySetpointProtocol,
 )
 from mavcore.protocols.moving_drop_protocol import (
     MovingDropProtocol as MovingDropProtocol,
 )
-from mavcore.protocols.rc_override_protocol import (
+from .rc_override_protocol import (
     RCOverrideProtocol as RCOverrideProtocol,
 )
 
-from mavcore.protocols.calibration_protocol import (
+from .calibration_protocol import (
     CalibrationProtocol as CalibrationProtocol,
 )

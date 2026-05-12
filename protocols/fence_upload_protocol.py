@@ -1,8 +1,8 @@
 import time
-from mavcore.messages import MissionAck
+from ..messages import MissionAck
 from pymavlink.dialects.v20 import common as mav
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import (
+from ..mav_protocol import MAVProtocol
+from ..messages import (
     FenceMissionCount,
     FenceMissionItemInt,
     MissionRequestInt,

@@ -1,7 +1,7 @@
 import pymavlink.dialects.v20.all as dialect
 import time
 import numpy as np
-from mavcore.mav_message import MAVMessage, thread_safe
+from ..mav_message import MAVMessage, thread_safe
 
 
 class SetpointLocal(MAVMessage):
