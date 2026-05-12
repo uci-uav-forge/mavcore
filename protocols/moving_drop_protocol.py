@@ -5,7 +5,7 @@ a payload drop at a specific waypoint index.
 
 from mavcore.mav_protocol import MAVProtocol
 from mavcore.messages import SetpointVelocity, LocalPositionNED
-from mavcore.types import Waypoint
+from mavcore.mavtypes import Waypoint
 import time
 import numpy as np
 from typing import Callable
