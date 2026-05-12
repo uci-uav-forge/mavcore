@@ -20,7 +20,7 @@ class Waypoint:
                 round(self.speed, 10),
             )
         )
-    
+
     def __iter__(self):
         yield self.x
         yield self.y
