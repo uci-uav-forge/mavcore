@@ -21,7 +21,7 @@ class MovingDropProtocol(MAVProtocol):
         current_pos: LocalPositionNED,
         waypoints: list[Waypoint],
         release_index: int,
-        drop_callback: Callable[[], bool],
+        drop_callback: Callable[[], None],
         boot_time_ms: int,
         log_func=lambda msg: print(msg),
         target_system: int = 1,
