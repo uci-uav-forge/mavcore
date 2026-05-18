@@ -102,7 +102,9 @@ class FullPose(MAVMessage):
             pose0 = self.pose_buffer[0]
             pose1 = self.pose_buffer[1]
             if self.timestamp_buffer[1] - self.timestamp_buffer[0] == 0:
-                proportion = (timestamp - self.timestamp_buffer[0]) / (1/30.0)  # for 30 hz
+                proportion = (timestamp - self.timestamp_buffer[0]) / (
+                    1 / 30.0
+                )  # for 30 hz
             else:
                 proportion = (timestamp - self.timestamp_buffer[0]) / (
                     self.timestamp_buffer[1] - self.timestamp_buffer[0]
@@ -112,7 +114,9 @@ class FullPose(MAVMessage):
             pose0 = self.pose_buffer[-2]
             pose1 = self.pose_buffer[-1]
             if self.timestamp_buffer[-1] - self.timestamp_buffer[-2] == 0:
-                proportion = (timestamp - self.timestamp_buffer[-2]) / (1/30.0)  # for 30 hz
+                proportion = (timestamp - self.timestamp_buffer[-2]) / (
+                    1 / 30.0
+                )  # for 30 hz
             else:
                 proportion = (timestamp - self.timestamp_buffer[-2]) / (
                     self.timestamp_buffer[-1] - self.timestamp_buffer[-2]
