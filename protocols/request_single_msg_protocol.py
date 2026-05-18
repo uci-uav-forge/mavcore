@@ -3,7 +3,7 @@ from ..messages import RequestSingleMessage, IntervalMessageID
 from ..messages.command_ack_msg import CommandAck
 
 
-class RequestMessageProtocol(MAVProtocol):
+class RequestSingleMessageProtocol(MAVProtocol):
     """
     Requests single message to be sent given the message id.
     """

@@ -17,6 +17,7 @@ from .arm_protocol import ArmProtocol as ArmProtocol
 from .request_msg_protocol import (
     RequestMessageProtocol as RequestMessageProtocol,
 )
+from .request_single_msg_protocol import RequestSingleMessageProtocol as RequestSingleMessageProtocol
 from .set_home_protocol import SetHomeProtocol as SetHomeProtocol
 from .reboot_protocol import RebootProtocol as RebootProtocol
 
