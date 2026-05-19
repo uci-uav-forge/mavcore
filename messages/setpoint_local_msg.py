@@ -29,6 +29,7 @@ class SetpointLocal(MAVMessage):
         self.x = x  # in meters
         self.y = y  # in meters
         self.z = z  # in meters
+        self.yaw = 0.0  # radians
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_set_position_target_local_ned_message(
@@ -46,7 +47,7 @@ class SetpointLocal(MAVMessage):
             afx=float(0.0),
             afy=float(0.0),
             afz=float(0.0),
-            yaw=float(0.0),
+            yaw=float(self.yaw),
             yaw_rate=float(0.0),
         )
 

@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 from ..mav_protocol import MAVProtocol
-from ..messages import CommandAck, LocalPositionNED, SetpointLocal
+from ..messages import CommandAck, LocalPositionNED, SetpointVelocity
 from ..mavtypes import Waypoint
 from gnc.util.dubins_path import compute_path_points
 
@@ -16,9 +16,8 @@ class DubinsNavigationProtocol(MAVProtocol):
     """
     Navigates through waypoints by sampling Dubins paths between consecutive points.
 
-    The protocol uses local position setpoints instead of velocity commands. It keeps a
-    small lookahead between the current waypoint and the next waypoint so the aircraft
-    follows a smooth path with bounded curvature.
+    The protocol uses local velocity setpoints along sampled Dubins paths so the aircraft
+    follows a smooth path with bounded curvature while preserving requested speed.
     """
 
     def __init__(
@@ -27,11 +26,12 @@ class DubinsNavigationProtocol(MAVProtocol):
         waypoints: list[Waypoint],
         boot_time_ms: int,
         turn_radius: float,
+        speed: float | None = None,
         log_func: Callable[[str], None] = print,
         slow_on_approach: bool = True,
-        point_step: float = 2.0,
-        point_radius: float = 1.0,
         max_climb_angle_deg: float | None = None,
+        point_step: float = 5.0,
+        point_radius: float = 5.0,
         target_system: int = 1,
         target_component: int = 0,
     ):
@@ -40,6 +40,7 @@ class DubinsNavigationProtocol(MAVProtocol):
         self.waypoints = waypoints
         self.boot_time_ms = boot_time_ms
         self.turn_radius = turn_radius
+        self.speed_override = speed
         self.slow_on_approach = slow_on_approach
         self.point_step = point_step
         self.point_radius = point_radius
@@ -50,7 +51,7 @@ class DubinsNavigationProtocol(MAVProtocol):
 
         self.follow_sleep_s = 0.25 if slow_on_approach else 0.15
 
-        self.setpoint_msg = SetpointLocal(
+        self.velocity_msg = SetpointVelocity(
             self.target_system,
             self.target_component,
             self.boot_time_ms,
@@ -76,15 +77,28 @@ class DubinsNavigationProtocol(MAVProtocol):
 
         return 0.0
 
-    def _heading_between(self, start: np.ndarray, end: np.ndarray) -> float:
-        delta = end[:2] - start[:2]
-        if float(np.linalg.norm(delta)) < 1e-6:
-            return 0.0
-        return float(math.atan2(float(delta[1]), float(delta[0])))
+    def _calculate_velocity_vector(
+        self,
+        current_pos: np.ndarray,
+        target_pos: np.ndarray,
+        target_speed: float,
+    ) -> np.ndarray:
+        direction = target_pos - current_pos
+        distance = float(np.linalg.norm(direction))
 
-    def _send_setpoint(self, sender, target: np.ndarray) -> None:
-        self.setpoint_msg.load(target)
-        sender.send_msg(self.setpoint_msg)
+        if distance < 0.1:
+            return np.array([0.0, 0.0, 0.0], dtype=float)
+
+        velocity = direction / distance * target_speed
+
+        if self.slow_on_approach and distance < 15.0:
+            velocity /= 3.0
+
+        return velocity
+
+    def _send_velocity(self, sender, velocity: np.ndarray) -> None:
+        self.velocity_msg.load(velocity)
+        sender.send_msg(self.velocity_msg)
 
     def _follow_point(self, sender, target: Waypoint) -> None:
         target_coords = self._waypoint_array(target)
@@ -92,9 +106,29 @@ class DubinsNavigationProtocol(MAVProtocol):
             current_position = self.current_pos.get_pos_ned()
             if float(np.linalg.norm(target_coords - current_position)) <= target.radius:
                 break
-
-            self._send_setpoint(sender, target_coords)
+            velocity = self._calculate_velocity_vector(
+                current_position,
+                target_coords,
+                self.speed_override if self.speed_override is not None else target.speed,
+            )
+            self._send_velocity(sender, velocity)
             time.sleep(self.follow_sleep_s)
+
+    def _wait_until_reached(
+        self,
+        target_coords: np.ndarray,
+        reach_radius: float,
+    ) -> None:
+        while True:
+            current_position = self.current_pos.get_pos_ned()
+            if float(np.linalg.norm(target_coords - current_position)) <= reach_radius:
+                return
+            time.sleep(self.follow_sleep_s)
+
+    def _segment_reach_radius(self, start_waypoint: Waypoint, end_waypoint: Waypoint) -> float:
+        # Dubins samples are only guide points. Use a looser radius so we advance through
+        # the path instead of trying to settle exactly on each intermediate sample.
+        return max(start_waypoint.radius, end_waypoint.radius, self.point_step * 4.0)
 
     def _build_segment_points(
         self,
@@ -115,6 +149,7 @@ class DubinsNavigationProtocol(MAVProtocol):
             )
             virtual_start = virtual_start - heading_vector * max(0.5, self.turn_radius * 0.25)
 
+        speed = self.speed_override if self.speed_override is not None else next_waypoint.speed
         return compute_path_points(
             virtual_start,
             current_heading,
@@ -122,7 +157,7 @@ class DubinsNavigationProtocol(MAVProtocol):
             next_coords,
             self.turn_radius,
             self.point_step,
-            next_waypoint.speed,
+            speed,
             self.point_radius,
             self.max_climb_angle_deg,
         )
@@ -135,15 +170,15 @@ class DubinsNavigationProtocol(MAVProtocol):
             return
 
         if len(self.waypoints) == 1:
-            self.log_func("[DubinsPath] Single waypoint provided; using direct local setpoint.")
+            self.log_func("[DubinsPath] Single waypoint provided; using direct velocity tracking.")
             self._follow_point(sender, self.waypoints[0])
             return
 
         current_heading = self._infer_heading(self._waypoint_array(self.waypoints[0]))
 
-        for index in range(len(self.waypoints) - 1):
+        for index in range(len(self.waypoints)):
             turn_waypoint = self.waypoints[index]
-            next_waypoint = self.waypoints[index + 1]
+            next_waypoint = self.waypoints[(index + 1) % len(self.waypoints)]
 
             current_position = self.current_pos.get_pos_ned()
             segment_points = self._build_segment_points(
@@ -168,11 +203,24 @@ class DubinsNavigationProtocol(MAVProtocol):
             )
 
             for sampled_waypoint in segment_points:
-                self._follow_point(sender, sampled_waypoint)
+                target_coords = self._waypoint_array(sampled_waypoint)
+                segment_reach_radius = self._segment_reach_radius(turn_waypoint, next_waypoint)
+                while True:
+                    current_position = self.current_pos.get_pos_ned()
+                    if float(np.linalg.norm(target_coords - current_position)) <= segment_reach_radius:
+                        break
 
-            if len(segment_points) >= 2:
-                start_point = self._waypoint_array(segment_points[-2])
-                end_point = self._waypoint_array(segment_points[-1])
-                current_heading = self._heading_between(start_point, end_point)
-            else:
-                current_heading = self._infer_heading(self._waypoint_array(next_waypoint))
+                    speed = (
+                        self.speed_override
+                        if self.speed_override is not None
+                        else sampled_waypoint.speed
+                    )
+                    velocity = self._calculate_velocity_vector(
+                        current_position,
+                        target_coords,
+                        speed,
+                    )
+                    self._send_velocity(sender, velocity)
+                    time.sleep(self.follow_sleep_s)
+
+            current_heading = self._infer_heading(self._waypoint_array(next_waypoint))
