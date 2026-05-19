@@ -33,12 +33,20 @@ class SingleVelocitySetpointProtocol(MAVProtocol):
         vy: float = self.velocity_vector[1]
         vz: float = self.velocity_vector[2]
         self.velocity_msg = SetpointVelocity(
-            self.target_system, self.target_component, self.boot_time_ms, vx, vy, vz, self.do_yaw
+            self.target_system,
+            self.target_component,
+            self.boot_time_ms,
+            vx,
+            vy,
+            vz,
+            self.do_yaw,
         )
 
         self.ack_msg = CommandAck()
 
-    def update_velocity(self, velocity_vector: Float[np.ndarray, "3"], do_yaw: bool | None = None) -> None:
+    def update_velocity(
+        self, velocity_vector: Float[np.ndarray, "3"], do_yaw: bool | None = None
+    ) -> None:
         self.velocity_vector = velocity_vector
         if do_yaw is not None:
             self.do_yaw = do_yaw
