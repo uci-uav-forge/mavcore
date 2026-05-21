@@ -31,6 +31,9 @@ from .mission_upload_protocol import MissionUploadProtocol as MissionUploadProto
 from .velocity_setpoint_protocol import (
     VelocitySetpointProtocol as VelocitySetpointProtocol,
 )
+from mavcore.protocols.moving_drop_protocol import (
+    MovingDropProtocol as MovingDropProtocol,
+)
 from .rc_override_protocol import (
     RCOverrideProtocol as RCOverrideProtocol,
 )

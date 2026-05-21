@@ -25,12 +25,16 @@ class GPSRaw(MAVMessage):
         self.fix_type = FixType(0)
         self.sats = -1  # number of satellites visible
         self.usec = 0
+        self.hacc = 0
+        self.vacc = 0
 
     def decode(self, msg):
         self.fix_type = FixType(msg.fix_type)
         self.sats = msg.satellites_visible
         self.usec = msg.time_usec
+        self.hacc = msg.h_acc
+        self.vacc = msg.v_acc
 
     @thread_safe
     def __repr__(self) -> str:
-        return f"(GPS_RAW_INT) timestamp: {self.timestamp} s, fix_type: {self.fix_type.name}, sats: {self.sats}"
+        return f"(GPS_RAW_INT) timestamp: {self.timestamp} s, fix_type: {self.fix_type.name}, sats: {self.sats}, hacc: {self.hacc} mm, vacc: {self.vacc} mm"
