@@ -15,6 +15,8 @@ from .fence_mission_msgs import (
     FenceMissionItemInt as FenceMissionItemInt,
 )
 from .gps_raw_int_msg import FixType as FixType
+from .heartbeat_msg import FlightMode as FlightMode
+from .heartbeat_msg import FlightModePlane as FlightModePlane
 from .full_pose_msg import FullPose as FullPose
 from .global_position_msg import GlobalPosition as GlobalPosition
 from .gps_raw_int_msg import GPSRaw as GPSRaw
@@ -29,6 +31,9 @@ from .local_position_msg import (
     LocalPosition as LocalPositionNED,
 )
 from .mission_ack_msg import MissionAck as MissionAck
+from .mission_plan_msgs import MissionClearAll as MissionClearAll
+from .mission_plan_msgs import MissionCount as MissionCount
+from .mission_plan_msgs import MissionItemInt as MissionItemInt
 from .mission_request_msg import MissionRequestInt as MissionRequestInt
 from .mission_request_msg import MissionType as MissionType
 from .mission_ack_msg import MissionResult as MissionResult
