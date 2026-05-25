@@ -110,7 +110,8 @@ class MAVMessage:
         self._pastdt.append(dt)
         if len(self._pastdt) > 10:
             self._pastdt.pop(0)
-        self.hz = len(self._pastdt) / sum(self._pastdt)
+        if sum(self._pastdt) != 0.0:
+            self.hz = len(self._pastdt) / sum(self._pastdt)
         self.timestamp = timestamp
 
     @thread_safe

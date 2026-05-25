@@ -29,8 +29,8 @@ from .fence_upload_protocol import (
 from .velocity_setpoint_protocol import (
     VelocitySetpointProtocol as VelocitySetpointProtocol,
 )
-from .dubins_navigation_protocol import (
-    DubinsNavigationProtocol as DubinsNavigationProtocol
+from mavcore.protocols.moving_drop_protocol import (
+    MovingDropProtocol as MovingDropProtocol,
 )
 from .rc_override_protocol import (
     RCOverrideProtocol as RCOverrideProtocol,
