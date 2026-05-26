@@ -2,27 +2,12 @@ import pymavlink.dialects.v20.all as dialect
 from enum import Enum
 
 from ..mav_message import MAVMessage, thread_safe
+from .request_msg_interval_msg import IntervalMessageID
 
 
-class IntervalMessageID(Enum):
-    SYS_STATUS = 1
-    SYSTEM_TIME = 2
-    GPS_RAW_INT = 24
-    RAW_IMU = 27
-    ATTITUDE = 30
-    ATTITUDE_QUATERNION = 31
-    LOCAL_POSITION_NED = 32
-    GLOBAL_POSITION_INT = 33
-    RC_CHANNELS = 65
-    VFR_HUD = 74
-    BATTERY_STATUS = 147
-    AUTOPILOT_VERSION = 148
-    WIND = 168
-
-
-class RequestMessageInterval(MAVMessage):
+class RequestSingleMessage(MAVMessage):
     """
-    Requests message interval stream from msg id at a specified rate.
+    Requests single message.
     """
 
     def __init__(
@@ -30,22 +15,20 @@ class RequestMessageInterval(MAVMessage):
         target_system: int,
         target_component: int,
         msg_id: IntervalMessageID,
-        rate_hz: float,
     ):
-        super().__init__("MAV_CMD_SET_MESSAGE_INTERVAL")
+        super().__init__("MAV_CMD_REQUEST_MESSAGE")
         self.target_system = target_system
         self.target_component = target_component
         self.msg_id = msg_id
-        self.rate_hz = rate_hz
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_command_long_message(
             target_system=self.target_system,
             target_component=self.target_component,
-            command=511,  # MAV_CMD_SET_MESSAGE_INTERVAL (511)
+            command=512,  # MAV_CMD_REQUEST_MESSAGE (512)
             confirmation=0,
             param1=float(self.msg_id.value),
-            param2=float((1.0 / self.rate_hz) * 1000000),  # interval in microseconds
+            param2=0.0,
             param3=0.0,
             param4=0.0,
             param5=0.0,
@@ -55,4 +38,4 @@ class RequestMessageInterval(MAVMessage):
 
     @thread_safe
     def __repr__(self):
-        return f"(MAV_CMD_SET_MESSAGE_INTERVAL) timestamp: {self.timestamp}, msg_id: {self.msg_id.name}"
+        return f"(MAV_CMD_REQUEST_MESSAGE) timestamp: {self.timestamp}, msg_id: {self.msg_id.name}"

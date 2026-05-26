@@ -3,6 +3,7 @@
 from .arm_msg import Arm as Arm
 from .attitude_msg import Attitude as Attitude
 from .attitude_quat_msg import AttitudeQuat as AttitudeQuat
+from .autopilot_version_msg import AutopilotVersion as AutopilotVersion
 from .battery_status_msg import (
     BatteryFunction as BatteryFunction,
     BatteryStatus as BatteryStatus,
@@ -43,6 +44,7 @@ from .reboot_msg import RebootMsg as RebootMsg
 from .request_msg_interval_msg import (
     RequestMessageInterval as RequestMessageInterval,
 )
+from .request_single_msg import RequestSingleMessage as RequestSingleMessage
 from .set_home_msg import SetHome as SetHome
 from .set_mode_msg import SetMode as SetMode
 from .attitude_target_msg import SetpointAttitude as SetpointAttitude

@@ -101,16 +101,26 @@ class FullPose(MAVMessage):
         if timestamp < self.timestamp_buffer[0]:
             pose0 = self.pose_buffer[0]
             pose1 = self.pose_buffer[1]
-            proportion = (timestamp - self.timestamp_buffer[0]) / (
-                self.timestamp_buffer[1] - self.timestamp_buffer[0]
-            )
+            if self.timestamp_buffer[1] - self.timestamp_buffer[0] == 0:
+                proportion = (timestamp - self.timestamp_buffer[0]) / (
+                    1 / 30.0
+                )  # for 30 hz
+            else:
+                proportion = (timestamp - self.timestamp_buffer[0]) / (
+                    self.timestamp_buffer[1] - self.timestamp_buffer[0]
+                )
             return pose0.interpolate(pose1, proportion, timestamp)
         elif timestamp > self.timestamp_buffer[-1]:
             pose0 = self.pose_buffer[-2]
             pose1 = self.pose_buffer[-1]
-            proportion = (timestamp - self.timestamp_buffer[-2]) / (
-                self.timestamp_buffer[-1] - self.timestamp_buffer[-2]
-            )
+            if self.timestamp_buffer[-1] - self.timestamp_buffer[-2] == 0:
+                proportion = (timestamp - self.timestamp_buffer[-2]) / (
+                    1 / 30.0
+                )  # for 30 hz
+            else:
+                proportion = (timestamp - self.timestamp_buffer[-2]) / (
+                    self.timestamp_buffer[-1] - self.timestamp_buffer[-2]
+                )
             return pose0.interpolate(pose1, proportion, timestamp)
 
         # find the two poses surrounding the timestamp
