@@ -9,7 +9,7 @@ import numpy as np
 from ..mav_protocol import MAVProtocol
 from ..messages import CommandAck, LocalPositionNED, SetpointVelocity
 from ..mavtypes import Waypoint
-from gnc.util.dubins_path import compute_path_points
+from gnc.waypoint_laps.dubins_path import compute_path_points
 
 
 class DubinsNavigationProtocol(MAVProtocol):
@@ -27,11 +27,12 @@ class DubinsNavigationProtocol(MAVProtocol):
         boot_time_ms: int,
         turn_radius: float,
         speed: float | None = None,
-        log_func: Callable[[str], None] = print,
         slow_on_approach: bool = True,
         max_climb_angle_deg: float | None = None,
-        point_step: float = 5.0,
-        point_radius: float = 5.0,
+        lookahead_distance: float = 10.0,
+        path_step: float = 2.0,
+        hertz: float = 15.0,
+        log_func: Callable[[str], None] = print,
         target_system: int = 1,
         target_component: int = 0,
     ):
@@ -40,16 +41,15 @@ class DubinsNavigationProtocol(MAVProtocol):
         self.waypoints = waypoints
         self.boot_time_ms = boot_time_ms
         self.turn_radius = turn_radius
-        self.speed_override = speed
+        self.speed = speed
+        self.lookahead_distance = lookahead_distance
+        self.path_step = path_step
+        self.control_period_s = 1.0 / hertz
+        self.log_func = log_func
         self.slow_on_approach = slow_on_approach
-        self.point_step = point_step
-        self.point_radius = point_radius
         self.max_climb_angle_deg = max_climb_angle_deg
         self.target_system = target_system
         self.target_component = target_component
-        self.log_func = log_func
-
-        self.follow_sleep_s = 0.25 if slow_on_approach else 0.15
 
         self.velocity_msg = SetpointVelocity(
             self.target_system,
@@ -61,166 +61,133 @@ class DubinsNavigationProtocol(MAVProtocol):
         )
         self.ack_msg = CommandAck()
 
-    def _waypoint_array(self, waypoint: Waypoint) -> np.ndarray:
-        return np.array([waypoint.x, waypoint.y, waypoint.z])
+    @staticmethod
+    def _position_array(position: LocalPositionNED) -> np.ndarray:
+        return np.array([position.x, position.y, position.z], dtype=float)
 
-    def _infer_heading(self, fallback_target: np.ndarray | None = None) -> float:
-        velocity = self.current_pos.get_vel_ned()
-        if float(np.linalg.norm(velocity[:2])) > 1e-6:
-            return float(math.atan2(float(velocity[1]), float(velocity[0])))
+    @staticmethod
+    def _waypoint_array(waypoint: Waypoint) -> np.ndarray:
+        return np.array([waypoint.x, waypoint.y, waypoint.z], dtype=float)
 
-        if fallback_target is not None:
-            current_position = self.current_pos.get_pos_ned()
-            delta = fallback_target[:2] - current_position[:2]
-            if float(np.linalg.norm(delta)) > 1e-6:
-                return float(math.atan2(float(delta[1]), float(delta[0])))
+    @staticmethod
+    def _heading_from_points(start: np.ndarray, end: np.ndarray) -> float:
+        delta = end[:2] - start[:2]
+        return math.atan2(float(delta[1]), float(delta[0]))
 
-        return 0.0
+    def _segment_speed(self, waypoint: Waypoint) -> float:
+        if self.speed is not None:
+            return float(self.speed)
+        if waypoint.speed > 0.0:
+            return float(waypoint.speed)
+        return 10.0
 
-    def _calculate_velocity_vector(
-        self,
-        current_pos: np.ndarray,
-        target_pos: np.ndarray,
-        target_speed: float,
-    ) -> np.ndarray:
-        direction = target_pos - current_pos
+    def _build_sampled_path(self) -> list[Waypoint]:
+        if len(self.waypoints) < 2:
+            return list(self.waypoints)
+
+        current_pos = self._position_array(self.current_pos)
+        current_heading = self._heading_from_points(current_pos, self._waypoint_array(self.waypoints[0]))
+        sampled_path: list[Waypoint] = []
+
+        for index in range(len(self.waypoints) - 1):
+            waypoint = self.waypoints[index]
+            next_waypoint = self.waypoints[index + 1]
+            speed = self._segment_speed(waypoint)
+            point_radius = max(1.0, float(waypoint.radius), float(next_waypoint.radius))
+
+            segment = compute_path_points(
+                current_pos=current_pos,
+                current_heading=current_heading,
+                waypoint=self._waypoint_array(waypoint),
+                next_waypoint=self._waypoint_array(next_waypoint),
+                turn_radius=float(self.turn_radius),
+                step=float(self.path_step),
+                speed=float(speed),
+                point_radius=point_radius,
+                max_climb_angle_deg=self.max_climb_angle_deg,
+            )
+
+            if not segment:
+                continue
+
+            sampled_path.extend(segment)
+            current_pos = self._waypoint_array(segment[-1])
+            if len(segment) >= 2:
+                current_heading = self._heading_from_points(
+                    self._waypoint_array(segment[-2]),
+                    self._waypoint_array(segment[-1]),
+                )
+
+        return sampled_path
+
+    def _lookahead_index(self, path_points: list[Waypoint], current_index: int) -> int:
+        if not path_points:
+            return 0
+
+        lookahead_steps = max(1, int(round(self.lookahead_distance / max(self.path_step, 1e-6))))
+        return min(current_index + lookahead_steps, len(path_points) - 1)
+
+    def _velocity_toward(self, current_position: np.ndarray, target: Waypoint) -> np.ndarray:
+        target_position = self._waypoint_array(target)
+        direction = target_position - current_position
         distance = float(np.linalg.norm(direction))
+        if distance < 1e-6:
+            return np.zeros(3, dtype=float)
 
-        if distance < 0.1:
-            return np.array([0.0, 0.0, 0.0], dtype=float)
+        target_speed = self._segment_speed(target)
+        if self.slow_on_approach and distance < self.lookahead_distance:
+            target_speed *= max(0.25, distance / max(self.lookahead_distance, 1e-6))
 
-        velocity = direction / distance * target_speed
+        return direction / distance * target_speed
 
-        if self.slow_on_approach and distance < 15.0:
-            velocity /= 3.0
-
-        return velocity
-
-    def _send_velocity(self, sender, velocity: np.ndarray) -> None:
-        self.velocity_msg.load(velocity)
-        sender.send_msg(self.velocity_msg)
-
-    def _follow_point(self, sender, target: Waypoint) -> None:
-        target_coords = self._waypoint_array(target)
-        while True:
-            current_position = self.current_pos.get_pos_ned()
-            if float(np.linalg.norm(target_coords - current_position)) <= target.radius:
-                break
-            velocity = self._calculate_velocity_vector(
-                current_position,
-                target_coords,
-                self.speed_override if self.speed_override is not None else target.speed,
-            )
-            self._send_velocity(sender, velocity)
-            time.sleep(self.follow_sleep_s)
-
-    def _wait_until_reached(
-        self,
-        target_coords: np.ndarray,
-        reach_radius: float,
-    ) -> None:
-        while True:
-            current_position = self.current_pos.get_pos_ned()
-            if float(np.linalg.norm(target_coords - current_position)) <= reach_radius:
-                return
-            time.sleep(self.follow_sleep_s)
-
-    def _segment_reach_radius(self, start_waypoint: Waypoint, end_waypoint: Waypoint) -> float:
-        # Dubins samples are only guide points. Use a looser radius so we advance through
-        # the path instead of trying to settle exactly on each intermediate sample.
-        return max(start_waypoint.radius, end_waypoint.radius, self.point_step * 4.0)
-
-    def _build_segment_points(
-        self,
-        current_position: np.ndarray,
-        current_heading: float,
-        turn_waypoint: Waypoint,
-        next_waypoint: Waypoint,
-    ) -> list[Waypoint]:
-        turn_coords = self._waypoint_array(turn_waypoint)
-        next_coords = self._waypoint_array(next_waypoint)
-
-        virtual_start = np.array(current_position, copy=True)
-        if float(np.linalg.norm(virtual_start[:2] - turn_coords[:2])) < max(
-            0.5, self.point_step * 0.25
-        ):
-            heading_vector = np.array(
-                [math.cos(current_heading), math.sin(current_heading), 0.0]
-            )
-            virtual_start = virtual_start - heading_vector * max(0.5, self.turn_radius * 0.25)
-
-        speed = self.speed_override if self.speed_override is not None else next_waypoint.speed
-        return compute_path_points(
-            virtual_start,
-            current_heading,
-            turn_coords,
-            next_coords,
-            self.turn_radius,
-            self.point_step,
-            speed,
-            self.point_radius,
-            self.max_climb_angle_deg,
-        )
 
     def run(self, sender, receiver):
         del receiver
 
-        if not self.waypoints:
-            self.log_func("[DubinsPath] No waypoints provided.")
+        sampled_path = self._build_sampled_path()
+        if not sampled_path:
+            self.log_func("[DubinsNavigation] No Dubins path could be sampled")
             return
 
-        if len(self.waypoints) == 1:
-            self.log_func("[DubinsPath] Single waypoint provided; using direct velocity tracking.")
-            self._follow_point(sender, self.waypoints[0])
-            return
+        self.log_func(
+            f"[DubinsNavigation] Following {len(sampled_path)} sampled Dubins points at "
+            f"lookahead {self.lookahead_distance:.1f} m"
+        )
 
-        current_heading = self._infer_heading(self._waypoint_array(self.waypoints[0]))
+        current_index = 0
+        final_point = sampled_path[-1]
 
-        for index in range(len(self.waypoints)):
-            turn_waypoint = self.waypoints[index]
-            next_waypoint = self.waypoints[(index + 1) % len(self.waypoints)]
-
-            current_position = self.current_pos.get_pos_ned()
-            segment_points = self._build_segment_points(
-                current_position,
-                current_heading,
-                turn_waypoint,
-                next_waypoint,
+        while True:
+            current_position = self._position_array(self.current_pos)
+            distance_to_goal = float(
+                np.linalg.norm(current_position - self._waypoint_array(final_point))
             )
+            if distance_to_goal <= final_point.radius:
+                break
 
-            if not segment_points:
-                self.log_func(
-                    f"[DubinsPath] Segment {index + 1}/{len(self.waypoints) - 1} "
-                    "could not be planned; falling back to direct waypoint tracking."
+            nearest_index = current_index
+            nearest_distance = float("inf")
+            for index in range(current_index, len(sampled_path)):
+                candidate_distance = float(
+                    np.linalg.norm(current_position - self._waypoint_array(sampled_path[index]))
                 )
-                self._follow_point(sender, next_waypoint)
-                current_heading = self._infer_heading(self._waypoint_array(next_waypoint))
-                continue
+                if candidate_distance < nearest_distance:
+                    nearest_distance = candidate_distance
+                    nearest_index = index
 
-            self.log_func(
-                f"[DubinsPath] Segment {index + 1}/{len(self.waypoints) - 1} "
-                f"with {len(segment_points)} Dubins samples"
-            )
+            current_index = nearest_index
+            target_index = self._lookahead_index(sampled_path, nearest_index)
+            target_point = sampled_path[target_index]
 
-            for sampled_waypoint in segment_points:
-                target_coords = self._waypoint_array(sampled_waypoint)
-                segment_reach_radius = self._segment_reach_radius(turn_waypoint, next_waypoint)
-                while True:
-                    current_position = self.current_pos.get_pos_ned()
-                    if float(np.linalg.norm(target_coords - current_position)) <= segment_reach_radius:
-                        break
+            velocity = self._velocity_toward(current_position, target_point)
+            self.velocity_msg.load(velocity)
+            sender.send_msg(self.velocity_msg)
 
-                    speed = (
-                        self.speed_override
-                        if self.speed_override is not None
-                        else sampled_waypoint.speed
-                    )
-                    velocity = self._calculate_velocity_vector(
-                        current_position,
-                        target_coords,
-                        speed,
-                    )
-                    self._send_velocity(sender, velocity)
-                    time.sleep(self.follow_sleep_s)
+            if target_index >= len(sampled_path) - 1 and nearest_distance <= self.lookahead_distance:
+                self.log_func("[DubinsNavigation] Final Dubins point reached")
 
-            current_heading = self._infer_heading(self._waypoint_array(next_waypoint))
+            time.sleep(self.control_period_s)
+
+        self.velocity_msg.load(np.zeros(3, dtype=float))
+        sender.send_msg(self.velocity_msg)
+
