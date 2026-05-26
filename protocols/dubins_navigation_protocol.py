@@ -27,11 +27,14 @@ class DubinsNavigationProtocol(MAVProtocol):
         boot_time_ms: int,
         turn_radius: float,
         speed: float | None = None,
+        final_heading: float | None = None,
         slow_on_approach: bool = True,
         max_climb_angle_deg: float | None = None,
-        lookahead_distance: float = 10.0,
-        path_step: float = 2.0,
+        lookahead_distance: float = 3.0,
+        path_step: float = 1.0,
         hertz: float = 15.0,
+        position_kp: float = 0.8,
+        velocity_kd: float = 0.4,
         log_func: Callable[[str], None] = print,
         target_system: int = 1,
         target_component: int = 0,
@@ -42,9 +45,12 @@ class DubinsNavigationProtocol(MAVProtocol):
         self.boot_time_ms = boot_time_ms
         self.turn_radius = turn_radius
         self.speed = speed
+        self.final_heading = final_heading
         self.lookahead_distance = lookahead_distance
         self.path_step = path_step
         self.control_period_s = 1.0 / hertz
+        self.position_kp = position_kp
+        self.velocity_kd = velocity_kd
         self.log_func = log_func
         self.slow_on_approach = slow_on_approach
         self.max_climb_angle_deg = max_climb_angle_deg
@@ -63,7 +69,7 @@ class DubinsNavigationProtocol(MAVProtocol):
 
     @staticmethod
     def _position_array(position: LocalPositionNED) -> np.ndarray:
-        return np.array([position.x, position.y, position.z], dtype=float)
+        return np.array(position.get_pos_ned(), dtype=float)
 
     @staticmethod
     def _waypoint_array(waypoint: Waypoint) -> np.ndarray:
@@ -73,6 +79,60 @@ class DubinsNavigationProtocol(MAVProtocol):
     def _heading_from_points(start: np.ndarray, end: np.ndarray) -> float:
         delta = end[:2] - start[:2]
         return math.atan2(float(delta[1]), float(delta[0]))
+
+    def _initial_heading(self) -> float:
+        current_velocity = np.array(self.current_pos.get_vel_ned(), dtype=float)
+        horizontal_speed = float(np.linalg.norm(current_velocity[:2]))
+        if horizontal_speed > 0.5:
+            return math.atan2(float(current_velocity[1]), float(current_velocity[0]))
+
+        current_position = self._position_array(self.current_pos)
+        min_distance = 1e-3
+
+        for waypoint in self.waypoints:
+            waypoint_position = self._waypoint_array(waypoint)
+            if float(np.linalg.norm(waypoint_position[:2] - current_position[:2])) > min_distance:
+                return self._heading_from_points(current_position, waypoint_position)
+
+        if len(self.waypoints) >= 2:
+            return self._heading_from_points(
+                self._waypoint_array(self.waypoints[0]),
+                self._waypoint_array(self.waypoints[1]),
+            )
+
+        return 0.0
+
+    def _terminal_heading(self) -> float:
+        if self.final_heading is not None:
+            return float(self.final_heading)
+
+        if len(self.waypoints) >= 2:
+            return self._heading_from_points(
+                self._waypoint_array(self.waypoints[-1]),
+                self._waypoint_array(self.waypoints[0]),
+            )
+
+        return self._initial_heading()
+
+    def _terminal_waypoint(self) -> Waypoint | None:
+        if not self.waypoints:
+            return None
+
+        final_waypoint = self.waypoints[-1]
+        heading = self._terminal_heading()
+        extension = max(
+            float(self.turn_radius),
+            float(self.lookahead_distance),
+            float(self.path_step),
+            float(final_waypoint.radius) * 4.0,
+        )
+        return Waypoint(
+            x=float(final_waypoint.x + math.cos(heading) * extension),
+            y=float(final_waypoint.y + math.sin(heading) * extension),
+            z=float(final_waypoint.z),
+            radius=float(final_waypoint.radius),
+            speed=float(final_waypoint.speed),
+        )
 
     def _segment_speed(self, waypoint: Waypoint) -> float:
         if self.speed is not None:
@@ -85,13 +145,27 @@ class DubinsNavigationProtocol(MAVProtocol):
         if len(self.waypoints) < 2:
             return list(self.waypoints)
 
-        current_pos = self._position_array(self.current_pos)
-        current_heading = self._heading_from_points(current_pos, self._waypoint_array(self.waypoints[0]))
+        current_pos = self.current_pos.get_pos_ned()
+        current_pos = np.array(current_pos, dtype=float)
+        current_heading = self._initial_heading()
         sampled_path: list[Waypoint] = []
+        sampled_waypoints = [
+            Waypoint(
+                x=float(current_pos[0]),
+                y=float(current_pos[1]),
+                z=float(current_pos[2]),
+                radius=0.0,
+                speed=self._segment_speed(self.waypoints[0]),
+            ),
+            *self.waypoints,
+        ]
+        terminal_waypoint = self._terminal_waypoint()
+        if terminal_waypoint is not None:
+            sampled_waypoints.append(terminal_waypoint)
 
-        for index in range(len(self.waypoints) - 1):
-            waypoint = self.waypoints[index]
-            next_waypoint = self.waypoints[index + 1]
+        for index in range(len(sampled_waypoints) - 2):
+            waypoint = sampled_waypoints[index + 1]
+            next_waypoint = sampled_waypoints[index + 2]
             speed = self._segment_speed(waypoint)
             point_radius = max(1.0, float(waypoint.radius), float(next_waypoint.radius))
 
@@ -140,6 +214,71 @@ class DubinsNavigationProtocol(MAVProtocol):
 
         return direction / distance * target_speed
 
+    def _path_tangent(self, path_points: list[Waypoint], index: int) -> np.ndarray:
+        current_point = self._waypoint_array(path_points[index])
+
+        if len(path_points) == 1:
+            return np.array([1.0, 0.0, 0.0], dtype=float)
+
+        if index <= 0:
+            next_point = self._waypoint_array(path_points[1])
+            tangent = next_point - current_point
+        elif index >= len(path_points) - 1:
+            previous_point = self._waypoint_array(path_points[-2])
+            tangent = current_point - previous_point
+        else:
+            previous_point = self._waypoint_array(path_points[index - 1])
+            next_point = self._waypoint_array(path_points[index + 1])
+            tangent = next_point - previous_point
+
+        tangent_norm = float(np.linalg.norm(tangent))
+        if tangent_norm < 1e-6:
+            return np.array([1.0, 0.0, 0.0], dtype=float)
+
+        return tangent / tangent_norm
+
+    def _pd_velocity(
+        self,
+        current_position: np.ndarray,
+        current_velocity: np.ndarray,
+        path_points: list[Waypoint],
+        target_index: int,
+    ) -> np.ndarray:
+        target_point = path_points[target_index]
+        target_position = self._waypoint_array(target_point)
+        path_tangent = self._path_tangent(path_points, target_index)
+
+        target_speed = self._segment_speed(target_point)
+        distance_to_goal = float(
+            np.linalg.norm(current_position - self._waypoint_array(path_points[-1]))
+        )
+        if self.slow_on_approach and distance_to_goal < self.lookahead_distance:
+            target_speed *= max(0.35, distance_to_goal / max(self.lookahead_distance, 1e-6))
+
+        position_error = target_position - current_position
+        along_track_error = float(np.dot(position_error, path_tangent))
+        cross_track_error = position_error - path_tangent * along_track_error
+
+        along_velocity = float(np.dot(current_velocity, path_tangent))
+        lateral_velocity = current_velocity - path_tangent * along_velocity
+
+        command = (
+            path_tangent * target_speed
+            + cross_track_error * self.position_kp
+            - lateral_velocity * self.velocity_kd
+        )
+
+        forward_component = float(np.dot(command, path_tangent))
+        if forward_component < 0.0:
+            command = command - path_tangent * forward_component
+
+        max_speed = max(target_speed * 1.5, target_speed + 1.0)
+        command_norm = float(np.linalg.norm(command))
+        if command_norm > max_speed and command_norm > 1e-6:
+            command = command / command_norm * max_speed
+
+        return command
+
 
     def run(self, sender, receiver):
         del receiver
@@ -149,16 +288,19 @@ class DubinsNavigationProtocol(MAVProtocol):
             self.log_func("[DubinsNavigation] No Dubins path could be sampled")
             return
 
-        self.log_func(
-            f"[DubinsNavigation] Following {len(sampled_path)} sampled Dubins points at "
-            f"lookahead {self.lookahead_distance:.1f} m"
-        )
+        # self.log_func(
+        #     f"[DubinsNavigation] Following {len(sampled_path)} sampled Dubins points at "
+        #     f"lookahead {self.lookahead_distance:.1f} m"
+        # )
+        # self.log_func(
+        #     f"[DubinsNavigation] PD gains: kp={self.position_kp:.2f}, kd={self.velocity_kd:.2f}"
+        # )
 
         current_index = 0
         final_point = sampled_path[-1]
 
         while True:
-            current_position = self._position_array(self.current_pos)
+            current_position = np.array(self.current_pos.get_pos_ned(), dtype=float)
             distance_to_goal = float(
                 np.linalg.norm(current_position - self._waypoint_array(final_point))
             )
@@ -177,14 +319,18 @@ class DubinsNavigationProtocol(MAVProtocol):
 
             current_index = nearest_index
             target_index = self._lookahead_index(sampled_path, nearest_index)
-            target_point = sampled_path[target_index]
-
-            velocity = self._velocity_toward(current_position, target_point)
+            current_velocity = np.array(self.current_pos.get_vel_ned(), dtype=float)
+            velocity = self._pd_velocity(
+                current_position,
+                current_velocity,
+                sampled_path,
+                target_index,
+            )
             self.velocity_msg.load(velocity)
             sender.send_msg(self.velocity_msg)
 
-            if target_index >= len(sampled_path) - 1 and nearest_distance <= self.lookahead_distance:
-                self.log_func("[DubinsNavigation] Final Dubins point reached")
+            # if target_index >= len(sampled_path) - 1 and nearest_distance <= self.lookahead_distance:
+            #     self.log_func("[DubinsNavigation] Final Dubins point reached")
 
             time.sleep(self.control_period_s)
 

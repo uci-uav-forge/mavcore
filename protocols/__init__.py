@@ -41,7 +41,9 @@ from mavcore.protocols.moving_drop_protocol import (
 from .rc_override_protocol import (
     RCOverrideProtocol as RCOverrideProtocol,
 )
-
+from .dubins_navigation_protocol import (
+    DubinsNavigationProtocol as DubinsNavigationProtocol,
+)
 from .calibration_protocol import (
     CalibrationProtocol as CalibrationProtocol,
 )
