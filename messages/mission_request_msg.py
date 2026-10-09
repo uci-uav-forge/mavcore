@@ -16,9 +16,7 @@ class MissionRequestInt(MAVMessage):
     """
 
     def __init__(self):
-        super().__init__(
-            "MISSION_REQUEST"
-        )  # Should be MISSION_REQUEST_INT but possible bug in pymavlink
+        super().__init__("MISSION_REQUEST_INT")
         self.mission_type = MissionType(-1)
         self.seq = -1
 

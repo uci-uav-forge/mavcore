@@ -3,8 +3,8 @@ from enum import IntEnum
 from typing import Any, Callable
 import time
 
-from ..mav_message import MAVMessage, thread_safe
-from ..mavtypes import FlightMode, FlightModePlane
+from mavcore.mav_message import MAVMessage, thread_safe
+from mavcore.mavtypes import FlightMode, FlightModePlane
 
 MAV_MODE_CUSTOM = 0
 NO_FLAGS = 0
@@ -83,11 +83,13 @@ class Heartbeat(MAVMessage):
             self.src_sys = msg.get_srcSystem()
             self.src_comp = msg.get_srcComponent()
             self.mask = msg.base_mode
-
-            if MAVType(self.type_id) == MAVType.QUADROTOR:
+            try:
                 self.mode = FlightMode(msg.custom_mode)
-            else:
-                self.mode = FlightModePlane(msg.custom_mode)
+            except ValueError:
+                try:
+                    self.mode = FlightModePlane(msg.custom_mode)
+                except ValueError:
+                    self.mode = msg.custom_mode
 
     @thread_safe
     def __repr__(self) -> str:
