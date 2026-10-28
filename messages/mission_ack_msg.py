@@ -43,4 +43,4 @@ class MissionAck(MAVMessage):
 
     @thread_safe
     def __repr__(self):
-        return f"(COMMAND_ACK) timestamp: {self.timestamp} s, result: {self.result.name}, type: {self.mission_type.name}"
+        return f"(MISSION_ACK) timestamp: {self.timestamp} s, result: {self.result.name}, type: {self.mission_type.name}"

@@ -38,8 +38,8 @@ class FlightModePlane(IntEnum):
     STABILIZE = 2
     TRAINING = 3
     ACRO = 4
-    FLY_BY_WIRE_A = 5
-    FLY_BY_WIRE_B = 6
+    FBWA = 5
+    FBWB = 6
     CRUISE = 7
     AUTOTUNE = 8
     AUTO = 10
@@ -48,9 +48,14 @@ class FlightModePlane(IntEnum):
     TAKEOFF = 13
     AVOID_ADSB = 14
     GUIDED = 15
-    INITIALISING = 16
+    INITIALIZING = 16
     QSTABILIZE = 17
     QHOVER = 18
     QLOITER = 19
     QLAND = 20
     QRTL = 21
+    QAUTOTUNE = 22
+    QACRO = 23
+    THERMAL = 24
+    LOITER_ALT_QLAND = 25
+    AUTOLAND = 26
