@@ -6,6 +6,7 @@ from .battery_update_protocol import (
 )
 from .heartbeat_protocol import HeartbeatProtocol as HeartbeatProtocol
 from .param_protocols import (
+    ParamListProtocol as ParamListProtocol,
     ParamReadProtocol as ParamReadProtocol,
     ParamWriteProtocol as ParamWriteProtocol,
 )
