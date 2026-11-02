@@ -84,7 +84,11 @@ class Heartbeat(MAVMessage):
             self.src_comp = msg.get_srcComponent()
             self.mask = msg.base_mode
 
-            if MAVType(self.type_id) == MAVType.QUADROTOR:
+            # MAV_TYPE is an open MAVLink enum: ArduPilot can report values
+            # (for example FIXED_WING=1) that this project does not enumerate.
+            # Only the quadcopter needs the copter mode table; all other
+            # supported aircraft use Plane's mode table.
+            if self.type_id == MAVType.QUADROTOR.value:
                 self.mode = FlightMode(msg.custom_mode)
             else:
                 self.mode = FlightModePlane(msg.custom_mode)
