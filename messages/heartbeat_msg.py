@@ -13,6 +13,7 @@ NO_FLAGS = 0
 class MAVType(IntEnum):
     QUADROTOR = 2
     GCS = 6
+    VTOL_TILT_ROTOR = 21
     VTOL_FIXED_ROTOR = 22
     ONBOARD_CONTROLLER = 18
 
