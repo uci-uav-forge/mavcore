@@ -5,6 +5,11 @@ from .battery_update_protocol import (
     UpdateBatteryProtocol as UpdateBatteryProtocol,
 )
 from .heartbeat_protocol import HeartbeatProtocol as HeartbeatProtocol
+from .param_protocols import (
+    ParamListProtocol as ParamListProtocol,
+    ParamReadProtocol as ParamReadProtocol,
+    ParamWriteProtocol as ParamWriteProtocol,
+)
 from .set_mode_protocol import SetModeProtocol as SetModeProtocol
 from .status_text_protocol import (
     StatusTextProtocol as StatusTextProtocol,
