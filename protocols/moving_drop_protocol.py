@@ -1,110 +1,147 @@
-"""
-MovingDropProtocol – Fly a velocity-controlled trajectory and trigger
-a payload drop at a specific waypoint index.
-"""
-
-from mavcore.mav_protocol import MAVProtocol
-from mavcore.messages import SetpointVelocity, LocalPositionNED
-from mavcore.mavtypes import Waypoint
 import time
+from collections.abc import Callable
+from threading import Thread
+
 import numpy as np
-from typing import Callable
+
+from ..mav_protocol import MAVProtocol
+from ..mavtypes import Waypoint
+from ..messages import LocalPositionNED, SetpointVelocity
 
 
 class MovingDropProtocol(MAVProtocol):
     """
-    Velocity-controlled waypoint navigation with mid-flight payload release.
+    Flies waypoints with velocity setpoints and fires drop_callback without stopping.
+
+    The release waypoint counts as reached when the vehicle crosses the line through
+    it perpendicular to the leg, within its radius horizontally. All other waypoints
+    are reached inside their radius.
+
+    drop_callback returns whether the release succeeded. It runs on its own thread
+    because payload commands block for seconds, far longer than the vehicle can go
+    without setpoints at speed.
+
+    Raises RuntimeError if any waypoint takes longer than leg_timeout_s to reach.
     """
+
+    UPDATE_PERIOD_S = 0.05
 
     def __init__(
         self,
         current_pos: LocalPositionNED,
         waypoints: list[Waypoint],
         release_index: int,
-        drop_callback: Callable[[], None],
+        drop_callback: Callable[[], bool],
         boot_time_ms: int,
         log_func=lambda msg: print(msg),
         target_system: int = 1,
         target_component: int = 0,
+        leg_timeout_s: float = 120.0,
     ):
         super().__init__()
         self.current_pos = current_pos
         self.waypoints = waypoints
         self.release_index = release_index
         self.drop_callback = drop_callback
-        self.boot_time_ms = boot_time_ms
         self.log_func = log_func
-        self.target_system = target_system
-        self.target_component = target_component
-
-        self._dropped = False  # ensure we only drop once
+        self.leg_timeout_s = leg_timeout_s
 
         self.velocity_msg = SetpointVelocity(
-            self.target_system,
-            self.target_component,
-            self.boot_time_ms,
-            0.0,
-            0.0,
-            0.0,
+            target_system, target_component, boot_time_ms, 0.0, 0.0, 0.0
         )
 
-    @staticmethod
-    def _velocity_vector(
-        current: np.ndarray,
-        target: np.ndarray,
-        speed: float,
-    ) -> np.ndarray:
-        """Unit direction * speed.  Returns zero if on-target."""
-        direction = target - current
-        dist = np.linalg.norm(direction)
-        if dist < 0.1:
-            return np.zeros(3)
-        return (direction / dist) * speed
-
     def run(self, sender, receiver):
-        """
-        Navigate through all waypoints; fire drop_callback at release_index.
-        """
+        release_thread = None
+
         for i, waypoint in enumerate(self.waypoints):
-            wp_coords = np.array([waypoint.x, waypoint.y, waypoint.z])
             is_release = i == self.release_index
-            phase = "RELEASE" if is_release else "NAV"
+            target = np.array([waypoint.x, waypoint.y, waypoint.z])
+            leg_direction = self._horizontal_direction(
+                self.current_pos.get_pos_ned(), target
+            )
+            deadline = time.monotonic() + self.leg_timeout_s
 
             self.log_func(
-                f"[MovingDrop] WP {i + 1}/{len(self.waypoints)} "
-                f"[{phase}] @ {waypoint.speed:.1f} m/s"
+                f"[MovingDrop] Waypoint {i + 1}/{len(self.waypoints)} "
+                f"@ {waypoint.speed:.1f} m/s"
             )
 
             while True:
-                current_position = self.current_pos.get_pos_ned()
-                distance = np.linalg.norm(wp_coords - current_position)
-
-                if is_release and not self._dropped and distance <= waypoint.radius:
-                    self.log_func(
-                        f"[MovingDrop] >>> RELEASE triggered at d={distance:.2f}m <<<"
+                position = self.current_pos.get_pos_ned()
+                if is_release:
+                    reached = self._crossed_release(
+                        position, target, leg_direction, waypoint.radius
                     )
-                    self._dropped = True
-                    self.drop_callback()
-
-                if distance <= waypoint.radius:
-                    if is_release:
-                        # Don't stop — fly through to next waypoint
-                        self.log_func("[MovingDrop] Passing through release point")
-                    else:
-                        self.log_func(f"[MovingDrop] Reached waypoint {i + 1}")
-                        # Brief zero-velocity command on non-critical waypoints
-                        self.velocity_msg.load(np.zeros(3))
-                        sender.send_msg(self.velocity_msg)
+                else:
+                    reached = np.linalg.norm(target - position) <= waypoint.radius
+                if reached:
                     break
 
-                velocity = self._velocity_vector(
-                    current_position, wp_coords, waypoint.speed
-                )
-                self.velocity_msg.load(velocity)
-                sender.send_msg(self.velocity_msg)
-                time.sleep(0.25)
+                if time.monotonic() > deadline:
+                    raise RuntimeError(
+                        f"Moving drop waypoint {i + 1} not reached within "
+                        f"{self.leg_timeout_s} s"
+                    )
 
-        # Final stop
-        self.velocity_msg.load(np.zeros(3))
-        sender.send_msg(self.velocity_msg)
+                self._send_velocity(
+                    sender, self._velocity_to(position, target, waypoint.speed)
+                )
+                time.sleep(self.UPDATE_PERIOD_S)
+
+            if is_release:
+                self._log_release(position, target)
+                release_thread = Thread(target=self._release, daemon=True)
+                release_thread.start()
+
+        self._send_velocity(sender, np.zeros(3))
+        if release_thread is not None:
+            release_thread.join()
         self.log_func("[MovingDrop] Trajectory complete")
+
+    def _send_velocity(self, sender, velocity: np.ndarray) -> None:
+        self.velocity_msg.load(velocity)
+        sender.send_msg(self.velocity_msg)
+
+    def _release(self) -> None:
+        try:
+            released = self.drop_callback()
+        except Exception as e:  # noqa: BLE001 - a failed release must not stop the flight
+            self.log_func(f"[MovingDrop] Release raised: {e}")
+            return
+        self.log_func(f"[MovingDrop] Release confirmed: {released}")
+
+    def _log_release(self, position: np.ndarray, target: np.ndarray) -> None:
+        offset = np.linalg.norm((target - position)[:2])
+        speed = np.linalg.norm(self.current_pos.get_vel_ned()[:2])
+        self.log_func(
+            f"[MovingDrop] Releasing {offset:.2f} m from release point "
+            f"at {speed:.2f} m/s ground speed, altitude {-position[2]:.2f} m"
+        )
+
+    @staticmethod
+    def _velocity_to(
+        position: np.ndarray, target: np.ndarray, speed: float
+    ) -> np.ndarray:
+        direction = target - position
+        distance = np.linalg.norm(direction)
+        if distance < 0.1:
+            return np.zeros(3)
+        return direction / distance * speed
+
+    @staticmethod
+    def _horizontal_direction(position: np.ndarray, target: np.ndarray) -> np.ndarray:
+        direction = (target - position)[:2]
+        distance = np.linalg.norm(direction)
+        if distance < 0.1:
+            return np.zeros(2)
+        return direction / distance
+
+    @staticmethod
+    def _crossed_release(
+        position: np.ndarray,
+        target: np.ndarray,
+        leg_direction: np.ndarray,
+        radius: float,
+    ) -> bool:
+        remaining = (target - position)[:2]
+        return remaining @ leg_direction <= 0.0 and np.linalg.norm(remaining) <= radius
