@@ -1,6 +1,6 @@
 import pymavlink.dialects.v20.all as dialect
 import numpy as np
-from ..mav_message import MAVMessage, thread_safe
+from mavcore.mav_message import MAVMessage, thread_safe
 
 
 class RCOverride(MAVMessage):
