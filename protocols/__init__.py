@@ -13,6 +13,7 @@ from .single_set_velocity_protocol import (
     SingleVelocitySetpointProtocol as SingleVelocitySetpointProtocol,
 )
 from .takeoff_protocol import TakeoffProtocol as TakeoffProtocol
+from .vtol_takeoff_protocol import VTOLTakeoffProtocol as VTOLTakeoffProtocol
 from .local_setpoint_protocol import (
     LocalSetpointProtocol as LocalSetpointProtocol,
 )
