@@ -91,7 +91,6 @@ class MovingDropProtocol(MAVProtocol):
         current_distance = np.linalg.norm(waypoint_coords[:2] - current_pos[:2])
 
         if current_distance <= self.accel_dist:
-            self.log_func(f"[MovingDrop] Current distance: {current_distance:.2f}, Accel distance: {self.accel_dist:.2f}")
             direction = waypoint_coords[:2] - current_pos[:2]
             horizontal_distance = np.linalg.norm(direction)
             if horizontal_distance > 0.1:
@@ -106,7 +105,7 @@ class MovingDropProtocol(MAVProtocol):
                     waypoints[0].speed,
                 )
                 waypoints.insert(0, accel_waypoint)
-                self.log_func(f"[MovingDrop] Adding acc waypoint at: {accel_waypoint}")
+                self.log_func(f"[MovingDrop] Adding acc waypoint at: {accel_waypoint.x:.2f}, {accel_waypoint.y:.2f}, {accel_waypoint.z:.2f}")
     
         for i in range(len(waypoints)):
             waypoint = waypoints[i]
@@ -138,6 +137,10 @@ class MovingDropProtocol(MAVProtocol):
                             )
                         self.drop_callback()
                         dropped = True
+                        # undetermined if the drone should continue to drop point or exit immediately after dropping
+                        # self.velocity_msg.load(np.array([0.0, 0.0, 0.0]))
+                        # sender.send_msg(self.velocity_msg)
+                        # break
 
                 if distance_to_waypoint <= waypoint.radius:
                     self.log_func(f"[MovingDrop] Reached waypoint {i + 1}")
@@ -146,7 +149,7 @@ class MovingDropProtocol(MAVProtocol):
                             self.log_func(f"[MovingDrop] Fallback dropping payload at position: {self.current_pos.get_pos_ned()}")
                             self.drop_callback()
                         self.velocity_msg.load(np.array([0.0, 0.0, 0.0]))
-                    sender.send_msg(self.velocity_msg)
+                        sender.send_msg(self.velocity_msg)
                     break
 
                 velocity_vector = self.calculate_velocity_vector(
