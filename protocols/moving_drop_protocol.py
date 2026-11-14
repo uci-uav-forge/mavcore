@@ -91,14 +91,13 @@ class MovingDropProtocol(MAVProtocol):
         current_distance = np.linalg.norm(waypoint_coords[:2] - current_pos[:2])
 
         if current_distance <= self.accel_dist:
+            self.log_func(f"[MovingDrop] Current distance: {current_distance:.2f}, Accel distance: {self.accel_dist:.2f}")
             direction = waypoint_coords[:2] - current_pos[:2]
             horizontal_distance = np.linalg.norm(direction)
             if horizontal_distance > 0.1:
                 direction /= horizontal_distance
                 accel_waypoint_coords = waypoint_coords.copy()
-                accel_waypoint_coords[:2] -= direction * (
-                    self.accel_dist - horizontal_distance
-                )
+                accel_waypoint_coords[:2] -= direction * self.accel_dist
                 accel_waypoint = Waypoint(
                     accel_waypoint_coords[0],
                     accel_waypoint_coords[1],
@@ -130,7 +129,13 @@ class MovingDropProtocol(MAVProtocol):
                     target_distance = max(MIN_DISTANCE, current_speed * self.drop_time)
                     
                     if horizontal_distance_to_waypoint <= target_distance:
-                        self.log_func(f"[MovingDrop] Dropping payload at position: {self.current_pos.get_pos_ned()}")
+                        self.log_func(
+                            f"[MovingDrop] Dropping payload at position: {self.current_pos.get_pos_ned()} "
+                            f"Current speed: {current_speed:.2f} m/s, "
+                            f"Current height: {-current_position[2]:.2f} m, "
+                            f"Current distance: {horizontal_distance_to_waypoint:.2f} m, "
+                            f"Target distance: {target_distance:.2f} m"
+                            )
                         self.drop_callback()
                         dropped = True
 
