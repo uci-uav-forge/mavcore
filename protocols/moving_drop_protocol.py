@@ -93,7 +93,7 @@ class MovingDropProtocol(MAVProtocol):
         if current_distance <= self.accel_dist:
             direction = waypoint_coords[:2] - current_pos[:2]
             horizontal_distance = np.linalg.norm(direction)
-            if horizontal_distance > 1e-6:
+            if horizontal_distance > 0.1:
                 direction /= horizontal_distance
                 accel_waypoint_coords = waypoint_coords.copy()
                 accel_waypoint_coords[:2] -= direction * (
@@ -103,16 +103,11 @@ class MovingDropProtocol(MAVProtocol):
                     accel_waypoint_coords[0],
                     accel_waypoint_coords[1],
                     accel_waypoint_coords[2],
-                    waypoint.radius,
-                    waypoint.speed,
+                    waypoints[0].radius,
+                    waypoints[0].speed,
                 )
                 waypoints.insert(0, accel_waypoint)
                 self.log_func(f"[MovingDrop] Adding acc waypoint at: {accel_waypoint}")
-            else:
-                self.log_func(
-                    "[MovingDrop] Skipping acceleration waypoint: "
-                    "vehicle is horizontally aligned with target"
-                )
     
         for i in range(len(waypoints)):
             waypoint = waypoints[i]
@@ -136,8 +131,8 @@ class MovingDropProtocol(MAVProtocol):
                     
                     if horizontal_distance_to_waypoint <= target_distance:
                         self.log_func(f"[MovingDrop] Dropping payload at position: {self.current_pos.get_pos_ned()}")
-                        dropped = True
                         self.drop_callback()
+                        dropped = True
 
                 if distance_to_waypoint <= waypoint.radius:
                     self.log_func(f"[MovingDrop] Reached waypoint {i + 1}")
