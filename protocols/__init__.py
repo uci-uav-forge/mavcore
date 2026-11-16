@@ -9,6 +9,9 @@ from .set_mode_protocol import SetModeProtocol as SetModeProtocol
 from .status_text_protocol import (
     StatusTextProtocol as StatusTextProtocol,
 )
+from .single_set_velocity_protocol import (
+    SingleVelocitySetpointProtocol as SingleVelocitySetpointProtocol,
+)
 from .takeoff_protocol import TakeoffProtocol as TakeoffProtocol
 from .local_setpoint_protocol import (
     LocalSetpointProtocol as LocalSetpointProtocol,
@@ -16,6 +19,9 @@ from .local_setpoint_protocol import (
 from .arm_protocol import ArmProtocol as ArmProtocol
 from .request_msg_protocol import (
     RequestMessageProtocol as RequestMessageProtocol,
+)
+from .request_single_msg_protocol import (
+    RequestSingleMessageProtocol as RequestSingleMessageProtocol,
 )
 from .set_home_protocol import SetHomeProtocol as SetHomeProtocol
 from .reboot_protocol import RebootProtocol as RebootProtocol

@@ -30,15 +30,15 @@ class BatteryStatus(MAVMessage):
 
     def __init__(self):
         super().__init__("BATTERY_STATUS")
-        self.bat_id = -1
-        self.bat_func = BatteryFunction(-1)
-        self.bat_type = BatteryType(-1)
-        self.temp = -1  # degrees in celcius
+        self.bat_id = 0
+        self.bat_func = BatteryFunction(0)
+        self.bat_type = BatteryType(0)
+        self.temp = 0  # degrees in celcius
         self.voltages = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # in mV
-        self.current = -1  # in centiAmps
-        self.current_consumed = -1  # in mAh
-        self.energy_consumed = -1  # in hJ
-        self.soc = -1  # state of charge in percent
+        self.current = 0  # in centiAmps
+        self.current_consumed = 0  # in mAh
+        self.energy_consumed = 0  # in hJ
+        self.soc = 0  # state of charge in percent
 
     def decode(self, msg):
         self.bat_id = msg.id

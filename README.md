@@ -1,10 +1,27 @@
 # MAVCore
 
 ## Set Up Environment
+
+In `uavf2027`, MAVCore is a sibling submodule of `autonomy_stack` and `gcs`.
+The installer links this same checkout in editable mode into both
+`venv-autonomy` and `venv-gcs` when those environments are selected. To link
+MAVCore into both existing environments manually, run from the `uavf2027` root:
+
+```bash
+./venv-autonomy/bin/python -m pip install -e ./mavcore
+./venv-gcs/bin/python -m pip install -e ./mavcore
+```
+
+Then import it normally with `from mavcore import MAVDevice`. Source edits are
+available on the next run without reinstalling; reinstall after changing
+package metadata or dependencies.
+
+For standalone MAVCore development, run from the `mavcore` directory:
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 ## How to Use

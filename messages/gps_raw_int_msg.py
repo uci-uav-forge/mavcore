@@ -27,6 +27,8 @@ class GPSRaw(MAVMessage):
         self.usec = 0
         self.hacc = 0
         self.vacc = 0
+        self.hdop = None
+        self.vdop = None
 
     def decode(self, msg):
         self.fix_type = FixType(msg.fix_type)
@@ -34,6 +36,8 @@ class GPSRaw(MAVMessage):
         self.usec = msg.time_usec
         self.hacc = msg.h_acc
         self.vacc = msg.v_acc
+        self.hdop = msg.eph / 100.0 if msg.eph != 65535 else None
+        self.vdop = msg.epv / 100.0 if msg.epv != 65535 else None
 
     @thread_safe
     def __repr__(self) -> str:
