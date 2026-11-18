@@ -11,6 +11,7 @@ NO_FLAGS = 0
 
 
 class MAVType(IntEnum):
+    FIXED_WING = 1
     QUADROTOR = 2
     GCS = 6
     VTOL_FIXED_ROTOR = 22
@@ -84,7 +85,7 @@ class Heartbeat(MAVMessage):
             self.src_comp = msg.get_srcComponent()
             self.mask = msg.base_mode
 
-            if MAVType(self.type_id) == MAVType.QUADROTOR:
+            if self.type_id == MAVType.QUADROTOR:
                 self.mode = FlightMode(msg.custom_mode)
             else:
                 self.mode = FlightModePlane(msg.custom_mode)
