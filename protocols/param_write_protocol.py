@@ -1,7 +1,12 @@
 from ..messages.param_request_read_msg import ParamRequestRead
 from ..messages.param_set_msg import ParamSet
 from ..mavtypes.param_types import (
-    MAVParamError, MAVParamType, Param, ParamEncoding, encode_param_value, param_values_match,
+    MAVParamError,
+    MAVParamType,
+    Param,
+    ParamEncoding,
+    encode_param_value,
+    param_values_match,
 )
 from ._param_protocol import _ParamProtocol
 

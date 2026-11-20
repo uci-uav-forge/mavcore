@@ -95,8 +95,12 @@ Each protocol blocks until it finishes and resends requests that get no reply
   writes of unknown names fail with `MAVParamError.UNKNOWN` after the retries.
 - Integer values are sent with `ParamEncoding.C_CAST` (ArduPilot). Pass
   `encoding=ParamEncoding.BYTEWISE` for PX4.
-- Replies are only accepted from `target_component` (1, the autopilot). Pass
-  `target_component=0` to accept every component.
+- Replies are accepted from `target_component` (default 1, the autopilot).
+  Read and write support `target_component=0` to accept every component.
+  List downloads require a specific, nonzero component because parameter indices
+  are scoped to each component.
+- List downloads make an initial recovery request for each missing index and
+  repeat the recovery for any indices still missing, up to `retries` more rounds.
 - Import `Param`, `MAVParamType`, `MAVParamError`, and `ParamEncoding` from
   `mavcore.mavtypes`. The parameter protocols collect replies during each request.
 

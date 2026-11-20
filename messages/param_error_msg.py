@@ -1,5 +1,6 @@
 from ..mav_message import MAVMessage, thread_safe
 from ..mavtypes import MAVParamError
+from ..mavtypes.param_types import _decode_param_id
 
 
 class ParamError(MAVMessage):
@@ -16,7 +17,7 @@ class ParamError(MAVMessage):
         self.system = self.component = -1
 
     def decode(self, msg):
-        self.param_id = msg.param_id
+        self.param_id = _decode_param_id(msg.param_id)
         self.param_index = msg.param_index
         self.system = msg.get_srcSystem()
         self.component = msg.get_srcComponent()

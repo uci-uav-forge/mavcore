@@ -1,7 +1,12 @@
 import pymavlink.dialects.v20.all as dialect
 
 from ..mav_message import MAVMessage
-from ..mavtypes.param_types import MAVParamType, ParamEncoding, _encode_param_id, encode_param_value
+from ..mavtypes.param_types import (
+    MAVParamType,
+    ParamEncoding,
+    _encode_param_id,
+    encode_param_value,
+)
 
 
 class ParamSet(MAVMessage):

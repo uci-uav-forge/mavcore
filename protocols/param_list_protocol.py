@@ -11,7 +11,8 @@ class ParamListProtocol(_ParamProtocol):
     Downloads all parameters with PARAM_REQUEST_LIST. The vehicle streams every parameter as
     PARAM_VALUE with its index, the stream is over when all indices arrived or nothing arrives
     for idle_timeout_s. Missing indices are then requested with PARAM_REQUEST_READ, batch_size
-    at a time (ArduPilot queues up to 20 requests), for up to retries rounds.
+    at a time (ArduPilot queues up to 20 requests), with up to retries additional rounds.
+    Each download targets one component, so target_component must be nonzero.
 
     After running:
         success: whether every parameter was received
@@ -31,6 +32,8 @@ class ParamListProtocol(_ParamProtocol):
         batch_size: int = 10,
         transfer_timeout_s: float | None = None,
     ):
+        if target_component == 0:
+            raise ValueError("ParamListProtocol requires a nonzero target_component")
         super().__init__(target_system, target_component, encoding, timeout_s, retries)
         self.idle_timeout_s = idle_timeout_s
         self.batch_size = batch_size
@@ -46,8 +49,11 @@ class ParamListProtocol(_ParamProtocol):
 
     def run(self, sender, receiver):
         self.success, self.params, self.param_count, self.missing = False, {}, 0, []
-        deadline = (time.monotonic() + self.transfer_timeout_s
-                    if self.transfer_timeout_s is not None else float("inf"))
+        deadline = (
+            time.monotonic() + self.transfer_timeout_s
+            if self.transfer_timeout_s is not None
+            else float("inf")
+        )
         self._start_listening(receiver)
         try:
             self._stream(sender, deadline)
@@ -63,7 +69,11 @@ class ParamListProtocol(_ParamProtocol):
                 for i, p in sorted(self._by_index.items())
                 if i < self.param_count
             }
-        self.success = self.param_count > 0 and len(self.params) == self.param_count and not self.missing
+        self.success = (
+            self.param_count > 0
+            and len(self.params) == self.param_count
+            and not self.missing
+        )
 
     def _stream(self, sender, deadline):
         request = ParamRequestList(self.target_system, self.target_component)
@@ -71,20 +81,26 @@ class ParamListProtocol(_ParamProtocol):
             if time.monotonic() >= deadline:
                 return
             self._send(sender, request)
-            if self._wait(lambda: self._count > 0, min(self.timeout_s, deadline - time.monotonic())):
+            if self._wait(
+                lambda: self._count > 0,
+                min(self.timeout_s, deadline - time.monotonic()),
+            ):
                 break
         else:
             return
 
         with self._cond:
             while self._missing():
-                idle_left = min(deadline, self._last_rx + self.idle_timeout_s) - time.monotonic()
+                idle_left = (
+                    min(deadline, self._last_rx + self.idle_timeout_s)
+                    - time.monotonic()
+                )
                 if idle_left <= 0:
                     return
                 self._cond.wait(idle_left)
 
     def _fill_missing(self, sender, deadline):
-        for _ in range(self.retries):
+        for _ in range(self.retries + 1):
             with self._cond:
                 missing = self._missing()
             if not missing:
@@ -100,7 +116,7 @@ class ParamListProtocol(_ParamProtocol):
                             param_index=index,
                             target_system=self.target_system,
                             target_component=self.target_component,
-                        )
+                        ),
                     )
                 self._wait(
                     lambda: all(i in self._by_index for i in batch),

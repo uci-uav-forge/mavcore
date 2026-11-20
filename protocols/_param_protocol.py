@@ -76,7 +76,10 @@ class _ParamProtocol(MAVProtocol):
             self._errors_by_index.clear()
             self._count = 0
             self._last_rx = 0.0
-        self._replies = (ParamValue(self.encoding, self._on_param_value), ParamError(self._on_param_error))
+        self._replies = (
+            ParamValue(self.encoding, self._on_param_value),
+            ParamError(self._on_param_error),
+        )
         for reply in self._replies:
             receiver.add_listener(reply)
 

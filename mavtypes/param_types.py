@@ -156,6 +156,12 @@ def _encode_param_id(param_id: str) -> bytes:
     return encoded
 
 
+def _decode_param_id(param_id: bytes | str) -> str:
+    if isinstance(param_id, bytes):
+        return param_id.split(b"\x00", 1)[0].decode("ascii", errors="replace")
+    return param_id.split("\x00", 1)[0]
+
+
 @dataclass(frozen=True)
 class Param:
     """
@@ -177,7 +183,7 @@ class Param:
     def from_msg(cls, msg, encoding: ParamEncoding) -> "Param":
         param_type = to_param_type(msg.param_type)
         return cls(
-            name=msg.param_id,
+            name=_decode_param_id(msg.param_id),
             value=decode_param_value(msg.param_value, param_type, encoding),
             param_type=param_type,
             index=-1 if msg.param_index == NO_PARAM_INDEX else msg.param_index,
