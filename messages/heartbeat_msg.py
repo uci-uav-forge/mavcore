@@ -55,6 +55,7 @@ class Heartbeat(MAVMessage):
         self.mode = FlightMode(-1)
         self.target_system = target_system
         self.target_component = target_component
+        self.matched_source = None
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_heartbeat_message(
@@ -75,10 +76,11 @@ class Heartbeat(MAVMessage):
         return bool(self.mask >> 7)
 
     def decode(self, msg):
-        if (
+        self.matched_source = (
             msg.get_srcSystem() == self.target_system
             and msg.get_srcComponent() == self.target_component
-        ):
+        )
+        if self.matched_source:
             self.type_id = msg.type
             self.state = MAVState(msg.system_status)
             self.src_sys = msg.get_srcSystem()

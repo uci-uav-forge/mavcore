@@ -97,7 +97,8 @@ Each protocol blocks until it finishes and resends requests that get no reply
   `encoding=ParamEncoding.BYTEWISE` for PX4.
 - Replies are only accepted from `target_component` (1, the autopilot). Pass
   `target_component=0` to accept every component.
-- To monitor parameter changes, add a `ParamValue` listener.
+- Import `Param`, `MAVParamType`, `MAVParamError`, and `ParamEncoding` from
+  `mavcore.mavtypes`. The parameter protocols collect replies during each request.
 
 `dev/param_test.py` runs all three against the SITL.
 
