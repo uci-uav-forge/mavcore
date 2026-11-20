@@ -101,6 +101,8 @@ Each protocol blocks until it finishes and resends requests that get no reply
   are scoped to each component.
 - List downloads make an initial recovery request for each missing index and
   repeat the recovery for any indices still missing, up to `retries` more rounds.
+  If the component reports a different parameter count during the download,
+  `success` is false and the collected values are discarded.
 - Import `Param`, `MAVParamType`, `MAVParamError`, and `ParamEncoding` from
   `mavcore.mavtypes`. The parameter protocols collect replies during each request.
 

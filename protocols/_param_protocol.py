@@ -1,5 +1,4 @@
 import threading
-import time
 from typing import Callable
 
 from ..mav_protocol import MAVProtocol
@@ -39,8 +38,6 @@ class _ParamProtocol(MAVProtocol):
         self._by_index: dict[int, Param] = {}
         self._errors_by_name: dict[str, MAVParamError] = {}
         self._errors_by_index: dict[int, MAVParamError] = {}
-        self._count = 0
-        self._last_rx = 0.0
         self._replies = ()
 
     def _from_target(self, system, component) -> bool:
@@ -51,12 +48,13 @@ class _ParamProtocol(MAVProtocol):
         if not self._from_target(param.system, param.component):
             return
         with self._cond:
-            self._by_name[param.name] = param
-            if 0 <= param.index < param.count:
-                self._by_index[param.index] = param
-            self._count = param.count
-            self._last_rx = time.monotonic()
+            self._record_param(param)
             self._cond.notify_all()
+
+    def _record_param(self, param: Param) -> None:
+        self._by_name[param.name] = param
+        if 0 <= param.index < param.count:
+            self._by_index[param.index] = param
 
     def _on_param_error(self, reply):
         if not self._from_target(reply.system, reply.component):
@@ -74,8 +72,6 @@ class _ParamProtocol(MAVProtocol):
             self._by_index.clear()
             self._errors_by_name.clear()
             self._errors_by_index.clear()
-            self._count = 0
-            self._last_rx = 0.0
         self._replies = (
             ParamValue(self.encoding, self._on_param_value),
             ParamError(self._on_param_error),

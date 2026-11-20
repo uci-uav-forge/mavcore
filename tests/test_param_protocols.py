@@ -109,3 +109,37 @@ def test_parameter_list_recovers_missing_indices(retries):
     assert protocol.param_count == 2
     assert protocol.missing == []
     assert list(protocol.params) == ["FIRST", "SIXTEEN_CHAR_ID_"]
+
+
+@pytest.mark.parametrize("change_during_recovery", [False, True])
+def test_parameter_list_discards_results_when_count_changes(change_during_recovery):
+    def respond(transport, request):
+        if isinstance(request, ParamRequestList):
+            transport.value("STALE", count=2)
+            if change_during_recovery:
+                return
+        elif not change_during_recovery:
+            pytest.fail("Recovery was requested after the parameter count changed")
+        transport.value("SECOND", index=1, count=3)
+        transport.value("THIRD", index=2, count=3)
+
+    protocol = ParamListProtocol(retries=0, timeout_s=0, idle_timeout_s=0)
+    transport = ParamTransport(respond)
+    protocol.run(transport, transport)
+
+    assert not protocol.success
+    assert protocol.params == {}
+    assert protocol.param_count == 0
+    assert not transport.listeners
+
+    transport = ParamTransport(lambda transport, request: transport.value("FRESH"))
+    protocol.run(transport, transport)
+
+    assert protocol.success
+    assert list(protocol.params) == ["FRESH"]
+
+
+@pytest.mark.parametrize("value", [1e40, 10**400])
+def test_real32_overflow_raises_value_error(value):
+    with pytest.raises(ValueError, match="out of range for REAL32"):
+        ParamWriteProtocol("GAIN", value, param_type=MAVParamType.REAL32)

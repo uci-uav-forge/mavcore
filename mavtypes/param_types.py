@@ -87,12 +87,13 @@ def encode_param_value(
     exactly as param_type.
     """
     if param_type == MAVParamType.REAL32:
-        if not math.isfinite(value):
-            raise ValueError(f"Parameter value must be finite, got {value}")
         try:
-            return _to_float32(float(value))
+            value = float(value)
+            if not math.isfinite(value):
+                raise ValueError(f"Parameter value must be finite, got {value}")
+            return _to_float32(value)
         except OverflowError:
-            raise ValueError(f"{value} is out of range for REAL32") from None
+            raise ValueError("Parameter value is out of range for REAL32") from None
 
     if param_type not in _INT_FORMATS:
         raise ValueError(

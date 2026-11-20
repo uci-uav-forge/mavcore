@@ -13,11 +13,13 @@ class ParamListProtocol(_ParamProtocol):
     for idle_timeout_s. Missing indices are then requested with PARAM_REQUEST_READ, batch_size
     at a time (ArduPilot queues up to 20 requests), with up to retries additional rounds.
     Each download targets one component, so target_component must be nonzero.
+    If the reported count changes during a download, the transfer fails and discards
+    the collected values because the parameter indices may have shifted.
 
     After running:
         success: whether every parameter was received
         params: parameters by name, in index order
-        param_count: total parameters the vehicle reported, 0 if it never replied
+        param_count: total parameters reported, 0 if no stable count was received
         missing: indices that were never received
     """
 
@@ -38,6 +40,9 @@ class ParamListProtocol(_ParamProtocol):
         self.idle_timeout_s = idle_timeout_s
         self.batch_size = batch_size
         self.transfer_timeout_s = transfer_timeout_s
+        self._count: int | None = None
+        self._count_changed = False
+        self._last_rx = 0.0
 
         self.success = False
         self.params: dict[str, Param] = {}
@@ -45,10 +50,20 @@ class ParamListProtocol(_ParamProtocol):
         self.missing: list[int] = []
 
     def _missing(self) -> list[int]:
-        return [i for i in range(self._count) if i not in self._by_index]
+        return [i for i in range(self._count or 0) if i not in self._by_index]
+
+    def _record_param(self, param: Param) -> None:
+        if self._count is not None and param.count != self._count:
+            self._count_changed = True
+        if self._count_changed:
+            return
+        super()._record_param(param)
+        self._count = param.count
+        self._last_rx = time.monotonic()
 
     def run(self, sender, receiver):
         self.success, self.params, self.param_count, self.missing = False, {}, 0, []
+        self._count, self._count_changed, self._last_rx = None, False, 0.0
         deadline = (
             time.monotonic() + self.transfer_timeout_s
             if self.transfer_timeout_s is not None
@@ -62,7 +77,9 @@ class ParamListProtocol(_ParamProtocol):
             self._stop_listening(receiver)
 
         with self._cond:
-            self.param_count = self._count
+            if self._count_changed:
+                return
+            self.param_count = self._count or 0
             self.missing = self._missing()
             self.params = {
                 p.name: p
@@ -82,7 +99,7 @@ class ParamListProtocol(_ParamProtocol):
                 return
             self._send(sender, request)
             if self._wait(
-                lambda: self._count > 0,
+                lambda: self._count_changed or bool(self._count),
                 min(self.timeout_s, deadline - time.monotonic()),
             ):
                 break
@@ -90,7 +107,7 @@ class ParamListProtocol(_ParamProtocol):
             return
 
         with self._cond:
-            while self._missing():
+            while not self._count_changed and self._missing():
                 idle_left = (
                     min(deadline, self._last_rx + self.idle_timeout_s)
                     - time.monotonic()
@@ -108,6 +125,9 @@ class ParamListProtocol(_ParamProtocol):
             for start in range(0, len(missing), self.batch_size):
                 batch = missing[start : start + self.batch_size]
                 for index in batch:
+                    with self._cond:
+                        if self._count_changed:
+                            return
                     if time.monotonic() >= deadline:
                         return
                     self._send(
@@ -119,6 +139,7 @@ class ParamListProtocol(_ParamProtocol):
                         ),
                     )
                 self._wait(
-                    lambda: all(i in self._by_index for i in batch),
+                    lambda batch=batch: self._count_changed
+                    or all(i in self._by_index for i in batch),
                     min(self.timeout_s, deadline - time.monotonic()),
                 )
