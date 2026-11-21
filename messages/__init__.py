@@ -43,6 +43,8 @@ from .param_set_msg import ParamSet as ParamSet
 from .param_value_msg import ParamValue as ParamValue
 from .mission_request_msg import MissionRequestInt as MissionRequestInt
 from .mission_request_msg import MissionType as MissionType
+from .mission_item_msg import MissionCount as MissionCount, MissionItemInt as MissionItemInt
+from .mission_item_reached_msg import MissionItemReached as MissionItemReached
 from .mission_ack_msg import MissionResult as MissionResult
 from .command_ack_msg import MAVResult as MAVResult
 from .heartbeat_msg import MAVState as MAVState
