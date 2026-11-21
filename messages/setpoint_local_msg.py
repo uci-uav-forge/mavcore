@@ -1,6 +1,8 @@
-import pymavlink.dialects.v20.all as dialect
 import time
+
 import numpy as np
+import pymavlink.dialects.v20.all as dialect
+
 from ..mav_message import MAVMessage, thread_safe
 
 
@@ -18,6 +20,7 @@ class SetpointLocal(MAVMessage):
         x: float,
         y: float,
         z: float,
+        yaw: float | None = 0.0,
     ):
         super().__init__("CUSTOM_SETPOINT_LOCAL")
         self.target_system = target_system
@@ -29,25 +32,26 @@ class SetpointLocal(MAVMessage):
         self.x = x  # in meters
         self.y = y  # in meters
         self.z = z  # in meters
+        self.yaw = yaw  # NED heading in radians; None leaves heading uncontrolled.
 
     def encode(self, system_id, component_id):
         return dialect.MAVLink_set_position_target_local_ned_message(
             time_boot_ms=int(time.time() * 1000 - self.boot_time_ms),
             target_system=int(self.target_system),
             target_component=int(self.target_component),
-            coordinate_frame=int(1),  # MAV_FRAME_LOCAL_NED
-            type_mask=int(4088 - 1024),  # ignore all but x/y/z position
+            coordinate_frame=1,  # MAV_FRAME_LOCAL_NED
+            type_mask=4088 if self.yaw is None else 4088 - 1024,
             x=float(self.x),
             y=float(self.y),
             z=float(self.z),
-            vx=float(0.0),
-            vy=float(0.0),
-            vz=float(0.0),
-            afx=float(0.0),
-            afy=float(0.0),
-            afz=float(0.0),
-            yaw=float(0.0),
-            yaw_rate=float(0.0),
+            vx=0.0,
+            vy=0.0,
+            vz=0.0,
+            afx=0.0,
+            afy=0.0,
+            afz=0.0,
+            yaw=float(self.yaw if self.yaw is not None else 0.0),
+            yaw_rate=0.0,
         )
 
     @thread_safe

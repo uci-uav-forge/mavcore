@@ -60,6 +60,54 @@ set_guided = device.run_protocol(SetModeProtocol(FlightMode.GUIDED))
 ```
 
 
+## Parameters
+
+Read, write, and download flight controller parameters with the
+[MAVLink parameter protocol](https://mavlink.io/en/services/parameter.html):
+
+```python
+from mavcore.protocols import ParamListProtocol, ParamReadProtocol, ParamWriteProtocol
+
+read = device.run_protocol(ParamReadProtocol("WPNAV_SPEED"))
+if read.success:
+    print(read.param.value, read.param.param_type.name)
+
+write = device.run_protocol(ParamWriteProtocol("WPNAV_SPEED", 750.0))
+print(write.success, write.param)  # param is the value the vehicle reported
+
+all_params = device.run_protocol(ParamListProtocol())
+print(all_params.param_count, all_params.params["ARMING_CHECK"].value)
+```
+
+Each protocol blocks until it finishes and resends requests that get no reply
+(`timeout_s`, `retries`). Check `success` afterwards:
+
+| Protocol | Results |
+| --- | --- |
+| `ParamReadProtocol(param_id)` or `(param_index=i)` | `param`, `error` |
+| `ParamWriteProtocol(param_id, value, param_type=None)` | `param`, `error` |
+| `ParamListProtocol()` | `params` (by name), `param_count`, `missing` |
+
+- `ParamWriteProtocol` reads the parameter first to find its type unless
+  `param_type` is given. The vehicle replies with the parameter's value after
+  a write, so a rejected write fails with the old value in `param`.
+- ArduPilot does not reply for a parameter that does not exist, so reads and
+  writes of unknown names fail with `MAVParamError.UNKNOWN` after the retries.
+- Integer values are sent with `ParamEncoding.C_CAST` (ArduPilot). Pass
+  `encoding=ParamEncoding.BYTEWISE` for PX4.
+- Replies are accepted from `target_component` (default 1, the autopilot).
+  Read and write support `target_component=0` to accept every component.
+  List downloads require a specific, nonzero component because parameter indices
+  are scoped to each component.
+- List downloads make an initial recovery request for each missing index and
+  repeat the recovery for any indices still missing, up to `retries` more rounds.
+  If the component reports a different parameter count during the download,
+  `success` is false and the collected values are discarded.
+- Import `Param`, `MAVParamType`, `MAVParamError`, and `ParamEncoding` from
+  `mavcore.mavtypes`. The parameter protocols collect replies during each request.
+
+`dev/param_test.py` runs all three against the SITL.
+
 ## How to Develop
 
 ### Create a MAVMessage:
