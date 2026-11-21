@@ -21,6 +21,8 @@ MIN_DISTANCE = 5.0
 
 class MovingDropProtocol(MAVProtocol):
 
+    UPDATE_PERIOD_S = 0.05
+
     def __init__(
         self,
         current_pos: LocalPositionNED,
@@ -41,19 +43,13 @@ class MovingDropProtocol(MAVProtocol):
         self.drop_time = drop_time
         self.accel_dist = accel_dist
         self.drop_callback = drop_callback
-        self.boot_time_ms = boot_time_ms
         self.log_func = log_func
         self.target_system = target_system
         self.target_component = target_component
         self.current_attitude = current_attitude
 
         self.velocity_msg = SetpointVelocity(
-            self.target_system,
-            self.target_component,
-            self.boot_time_ms,
-            0.0,
-            0.0,
-            0.0,
+            target_system, target_component, boot_time_ms, 0.0, 0.0, 0.0
         )
         
     def calculate_velocity_vector(

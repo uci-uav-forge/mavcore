@@ -18,8 +18,8 @@ class AutopilotVersion(MAVMessage):
 
     @thread_safe
     def get_uid2(self) -> str:
-        """Return UID2 as hexadecimal without trailing MAVLink padding."""
-        return bytes(self.uid2).rstrip(b"\x00").hex()
+        """Return all 18 UID2 bytes as hexadecimal, or an empty string if absent."""
+        return bytes(self.uid2).hex() if any(self.uid2) else ""
 
     @thread_safe
     def get_uid(self) -> str:
