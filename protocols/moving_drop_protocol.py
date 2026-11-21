@@ -133,7 +133,7 @@ class MovingDropProtocol(MAVProtocol):
                             )
                         self.drop_callback()
                         dropped = True
-                        # undetermined if the drone should continue to drop point or exit immediately after dropping
+                        # if the drone should exit immediately after dropping uncomment
                         # self.velocity_msg.load(np.array([0.0, 0.0, 0.0]))
                         # sender.send_msg(self.velocity_msg)
                         # break
